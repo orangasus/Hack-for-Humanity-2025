@@ -1,0 +1,7 @@
+TODO
+   - Add more models and set their relationships
+   - Sessions
+   - Different access to endpoints (if logged in, if admin etc)
+   - Error Handling
+   - Better response messages
+
