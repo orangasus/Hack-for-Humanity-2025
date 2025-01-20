@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'courses',
+    'uni_prof',
+    'reviews'
     'django.contrib.sites', 
     'allauth', 
     'allauth.account', 
