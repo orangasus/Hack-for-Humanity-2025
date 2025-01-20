@@ -4,6 +4,9 @@ from rest_framework.response import Response
 
 from .courses_serializer import CourseSerializer
 from .models import Course
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+
 
 """
 Views responsible for operations with Course model
@@ -58,3 +61,4 @@ def get_all_courses(request):
     courses = Course.objects.all()
     serializer = CourseSerializer(courses, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
