@@ -84,6 +84,7 @@ def login_user(request):
 
     user = authenticate(username=username, password=password)
     if user:
+        request.session["user.id"]=user.id
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -95,6 +96,8 @@ def signup_user(request):
 @api_view(['POST'])
 def logout_user(request):
     logout(request)
+    delete_session()
+
     return Response(status=status.HTTP_200_OK)
 
 def set_session(request):
@@ -102,12 +105,12 @@ def set_session(request):
     return HttpResponse('Session data set')
 
 def get_session(request):
-    value = request.session.get('key', 'default_value')
+    value = request.session.get('user.id', 'default_value')
     return HttpResponse(f'Session data: {value}')
 
 def delete_session(request):
     try:
-        del request.session['key']
+        del request.session['user.id']
     except KeyError:
         pass
     return HttpResponse('Session data cleared')
@@ -118,7 +121,7 @@ def send_test_email(request):
         'Test Email',
         'This is a test email sent from Django.',
         'forgot.ica@gmail.com',
-        ['example.email@email.com'],
+        ['niklas.marchese.ica@gmail.com'],
         fail_silently=False,
     )
     return HttpResponse('Test email sent')
