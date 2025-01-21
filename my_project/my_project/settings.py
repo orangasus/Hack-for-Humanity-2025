@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'users',
     'courses',
     'uni_prof',
-    'reviews'
+    'reviews',
     'django.contrib.sites', 
     'allauth', 
     'allauth.account', 
@@ -58,6 +58,16 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+}
 
 ROOT_URLCONF = 'my_project.urls'
 

@@ -7,13 +7,12 @@ from .models import ExtendedUser
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User, Group
-from django.contrib.auth.decorators import permission_required, login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 import logging
+from django.core.mail import send_mail
 
 # Set up logging
 logger = logging.getLogger(__name__)
-
-from django.core.mail import send_mail
 
 # Helper function to assign user to a group programmatically
 def assign_user_to_group(username, group_name):
@@ -27,18 +26,21 @@ def assign_user_to_group(username, group_name):
     except Group.DoesNotExist:
         logger.error(f"Group {group_name} does not exist")
 
-@permission_required('my_project.can_view_mymodel')  
-def my_view(request):
-    return HttpResponse('You have access!')
+# Helper function to check if user is an admin
+def is_admin(user):
+    return user.is_staff or user.is_superuser
 
 @api_view(['GET'])
 @login_required
+@user_passes_test(is_admin)
 def get_all_users(request):
     users = ExtendedUser.objects.all()
     serializer = ExtendedUserSerializer(users, many=True)
     return Response(serializer.data)
 
 @api_view(['POST'])
+@login_required
+@user_passes_test(is_admin)
 def create_user(request):
     serializer = ExtendedUserSerializer(data=request.data)
     if serializer.is_valid():
@@ -47,6 +49,8 @@ def create_user(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['DELETE'])
+@login_required
+@user_passes_test(is_admin)
 def delete_user_by_id(request, user_id):
     try:
         user_to_delete = ExtendedUser.objects.get(id=user_id)
@@ -56,6 +60,8 @@ def delete_user_by_id(request, user_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['PUT'])
+@login_required
+@user_passes_test(is_admin)
 def update_user_by_id(request, user_id):
     try:
         user_to_update = ExtendedUser.objects.get(id=user_id)
@@ -69,6 +75,8 @@ def update_user_by_id(request, user_id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@login_required
+@user_passes_test(is_admin)
 def get_user_by_id(request, user_id):
     try:
         user_to_get = ExtendedUser.objects.get(id=user_id)
@@ -84,7 +92,7 @@ def login_user(request):
 
     user = authenticate(username=username, password=password)
     if user:
-        request.session["user.id"]=user.id
+        request.session["user.id"] = user.id
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -94,20 +102,26 @@ def signup_user(request):
     return create_user(request)
 
 @api_view(['POST'])
+@login_required
 def logout_user(request):
     logout(request)
     delete_session()
-
     return Response(status=status.HTTP_200_OK)
 
+@login_required
+@user_passes_test(is_admin)
 def set_session(request):
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
 
+@login_required
+@user_passes_test(is_admin)
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
     return HttpResponse(f'Session data: {value}')
 
+@login_required
+@user_passes_test(is_admin)
 def delete_session(request):
     try:
         del request.session['user.id']
@@ -115,7 +129,8 @@ def delete_session(request):
         pass
     return HttpResponse('Session data cleared')
 
-
+@login_required
+@user_passes_test(is_admin)
 def send_test_email(request):
     send_mail(
         'Test Email',
