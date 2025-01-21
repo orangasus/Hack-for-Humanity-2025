@@ -114,8 +114,7 @@ def set_session(request):
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
 
-@login_required
-@user_passes_test(is_admin)
+
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
     return HttpResponse(f'Session data: {value}')

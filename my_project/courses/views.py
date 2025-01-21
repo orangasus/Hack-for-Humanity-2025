@@ -6,11 +6,16 @@ from .courses_serializer import CourseSerializer
 from .models import Course
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-
+from django.contrib.auth.decorators import login_required, user_passes_test
+from rest_framework.decorators import api_view, permission_classes
+import logging
 
 """
 Views responsible for operations with Course model
 """
+# Helper function to check if user is an admin
+def is_admin(user):
+    return user.is_staff or user.is_superuser
 
 
 @api_view(['GET'])
@@ -25,6 +30,8 @@ def get_course_by_id(request, course_id):
 
 
 @api_view(['POST'])
+@login_required
+@user_passes_test(is_admin)
 def create_course(request):
     serializer = CourseSerializer(request.data)
     if serializer.is_valid():
@@ -34,6 +41,8 @@ def create_course(request):
 
 
 @api_view(['PUT'])
+@login_required
+@user_passes_test(is_admin)
 def update_course_by_id(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
@@ -46,6 +55,8 @@ def update_course_by_id(request, course_id):
 
 
 @api_view(['DELETE'])
+@login_required
+@user_passes_test(is_admin)
 def delete_course_by_id(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
