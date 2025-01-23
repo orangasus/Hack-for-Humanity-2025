@@ -1,6 +1,7 @@
 import logging
 from base64 import urlsafe_b64decode
 
+from adodbapi import IntegrityError
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
@@ -41,28 +42,17 @@ def is_admin(user):
 # @login_required
 # @user_passes_test(is_admin)
 def get_all_users(request):
-    users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
+    ex_users = ExtendedUser.objects.all()
+    serializer = ExtendedUserSerializer(ex_users, many=True)
     return Response(serializer.data)
-
-
-@api_view(['POST'])
-@login_required
-@user_passes_test(is_admin)
-def create_user(request):
-    serializer = ExtendedUserSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['DELETE'])
 @login_required
 @user_passes_test(is_admin)
-def delete_user_by_id(request, user_id):
+def delete_user_by_id(request, ex_user_id):
     try:
-        user_to_delete = ExtendedUser.objects.get(id=user_id)
+        user_to_delete = ExtendedUser.objects.get(id=ex_user_id)
         user_to_delete.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     except ExtendedUser.DoesNotExist:
@@ -72,9 +62,9 @@ def delete_user_by_id(request, user_id):
 @api_view(['PUT'])
 @login_required
 @user_passes_test(is_admin)
-def update_user_by_id(request, user_id):
+def update_user_by_id(request, ex_user_id):
     try:
-        user_to_update = ExtendedUser.objects.get(id=user_id)
+        user_to_update = ExtendedUser.objects.get(id=ex_user_id)
     except ExtendedUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -88,9 +78,9 @@ def update_user_by_id(request, user_id):
 @api_view(['GET'])
 @login_required
 @user_passes_test(is_admin)
-def get_user_by_id(request, user_id):
+def get_user_by_id(request, ex_user_id):
     try:
-        user_to_get = ExtendedUser.objects.get(id=user_id)
+        user_to_get = ExtendedUser.objects.get(id=ex_user_id)
         serializer = ExtendedUserSerializer(user_to_get)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except ExtendedUser.DoesNotExist:
@@ -103,8 +93,9 @@ def login_user(request):
     password = request.data.get('password')
 
     user = authenticate(username=username, password=password)
+    ex_user = ExtendedUser.objects.get(user=user)
     if user:
-        request.session["user.id"] = user.id
+        request.session["user.id"] = ex_user.id
         return Response(status=status.HTTP_200_OK)
     return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -115,25 +106,30 @@ def signup_user(request):
     password = request.data.get('password')
     email = request.data.get('email')
 
-    user = User.objects.create_user(username=username, password=password, email=email)
-    user.is_active = False
-    user.save()
-
-    send_confirmation_email(request._request, user)
-    return HttpResponse("Awaiting confirmation...")
+    try:
+        user = User.objects.create_user(username=username, password=password, email=email)
+    except IntegrityError:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    else:
+        user.is_active = False
+        user.save()
+        ex_user = ExtendedUser.objects.create(user=user, public_username='npc')
+        ex_user.save()
+        send_confirmation_email(request._request, ex_user)
+    return Response(status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
-def reset_password_request(request, user_id):
-    user = User.objects.get(id = user_id)
-    send_password_reset_email(request, user)
+def reset_password_request(request, ex_user_id):
+    ex_user = ExtendedUser.objects.get(id = ex_user_id)
+    send_password_reset_email(request, ex_user)
     return HttpResponse('Reset password Email sent!')
 
 @api_view(['GET'])
 def password_reset_check_token(request, uidb64, token):
     uid = force_str(urlsafe_b64decode(uidb64))
-    user = User.objects.get(pk=uid)
+    ex_user = ExtendedUser.objects.get(pk=uid)
 
-    if token_generator.check_token(user, token):
+    if token_generator.check_token(ex_user, token):
         # can reset password
         return JsonResponse({'can_reset' : True})
     else:
@@ -141,11 +137,11 @@ def password_reset_check_token(request, uidb64, token):
         return JsonResponse({'can_reset' : False})
 
 @api_view(['POST'])
-def reset_user_password(request, id):
-    user = User.objects.get(id=id)
+def reset_user_password(request, ex_id):
+    ex_user = ExtendedUser.objects.get(id=ex_id)
     new_password = request.POST.get('new_password')
-    user.set_password(new_password)
-    user.save()
+    ex_user.user.set_password(new_password)
+    ex_user.save()
 
 @api_view(['POST'])
 @login_required

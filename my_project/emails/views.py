@@ -9,20 +9,21 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode
 
 from .token_gen import token_generator
+from users.models import ExtendedUser
 
 
-def send_confirmation_email(request, user):
+def send_confirmation_email(request, ex_user):
     # domain = get_current_site(request).domain
     mail_subject = 'Account Activation'
     message = render_to_string('confirmation_template.html',
                                {
-                                   "user": user,
+                                   "user": ex_user.user,
                                    "domain": '127.0.0.1:8000',
                                    # char/digit -> byte representation (8bit for each char) -> encode64 (6bit for each char) (url-safe) representation
-                                   "uid": generate_uidb64(user.pk),
-                                   "token": token_generator.make_token(user)
+                                   "uid": generate_uidb64(ex_user.pk),
+                                   "token": token_generator.make_token(ex_user)
                                })
-    to_email = user.email
+    to_email = ex_user.user.email
     email = EmailMessage(
         mail_subject, message, to=[to_email]
     )
@@ -37,26 +38,26 @@ def generate_uidb64(id):
 
 def activate_account(request, uidb64, token):
     uid = force_str(urlsafe_b64decode(uidb64))
-    user = User.objects.get(pk=uid)
+    ex_user = ExtendedUser.objects.get(pk=uid)
 
-    if token_generator.check_token(user, token):
-        user.is_active = True
-        user.save()
+    if token_generator.check_token(ex_user, token):
+        ex_user.user.is_active = True
+        ex_user.save()
         return HttpResponse('Account Confirmed!')
     else:
         return HttpResponse('Verification Failed :(')
 
-def send_password_reset_email(request, user):
+def send_password_reset_email(request, ex_user):
     mail_subject = 'Resetting Password'
     message = render_to_string('password_reset.html',
                                {
-                                   "user": user,
+                                   "user": ex_user,
                                    "domain": '127.0.0.1:8000',
                                    # char/digit -> byte representation (8bit for each char) -> encode64 (6bit for each char) (url-safe) representation
-                                   "uid": generate_uidb64(user.pk),
-                                   "token": token_generator.make_token(user)
+                                   "uid": generate_uidb64(ex_user.pk),
+                                   "token": token_generator.make_token(ex_user)
                                })
-    to_email = user.email
+    to_email = ex_user.user.email
     email = EmailMessage(
         mail_subject, message, to=[to_email]
     )
