@@ -60,15 +60,15 @@ def delete_user_by_id(request, ex_user_id):
 
 
 @api_view(['PUT'])
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def update_user_by_id(request, ex_user_id):
     try:
         user_to_update = ExtendedUser.objects.get(id=ex_user_id)
     except ExtendedUser.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    serializer = ExtendedUserSerializer(user_to_update, data=request.data)
+    serializer = ExtendedUserSerializer(user_to_update, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -115,6 +115,7 @@ def signup_user(request):
         user.save()
         ex_user = ExtendedUser.objects.create(user=user, public_username='npc')
         ex_user.save()
+        ex_user.generate_public_name()
         send_confirmation_email(request._request, ex_user)
     return Response(status=status.HTTP_201_CREATED)
 

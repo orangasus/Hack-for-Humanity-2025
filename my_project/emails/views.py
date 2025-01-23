@@ -42,7 +42,7 @@ def activate_account(request, uidb64, token):
 
     if token_generator.check_token(ex_user, token):
         ex_user.user.is_active = True
-        ex_user.save()
+        ex_user.user.save()
         return HttpResponse('Account Confirmed!')
     else:
         return HttpResponse('Verification Failed :(')
