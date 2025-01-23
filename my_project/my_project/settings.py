@@ -42,10 +42,11 @@ INSTALLED_APPS = [
     'courses',
     'uni_prof',
     'reviews',
+    'emails',
     'django.contrib.sites', 
     'allauth', 
     'allauth.account', 
-    'allauth.socialaccount',
+    'allauth.socialaccount'
 ]
 
 MIDDLEWARE = [
@@ -140,14 +141,10 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-SITE_ID = 1
-ACCOUNT_EMAIL_REQUIRED = True 
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'forgot.ica@gmail.com'
-EMAIL_HOST_PASSWORD = 'jurc tdjb cvos kqld'
+EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
+EMAIL_PORT = 587  # SMTP port (e.g., 587 for TLS, 465 for SSL)
+EMAIL_USE_TLS = True  # Use TLS for secure connection
+EMAIL_HOST_USER = 'korhonencrow@gmail.com'  # Your SMTP server's email address
+EMAIL_HOST_PASSWORD = 'cibt zloh rxuy tegd'  # Your SMTP server's email password
+DEFAULT_FROM_EMAIL = 'orangasus@gmail.com'  # Default email address for sending emails
