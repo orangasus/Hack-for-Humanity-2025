@@ -1,16 +1,19 @@
 import logging
+from base64 import urlsafe_b64decode
 
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.utils.encoding import force_str
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from emails.views import send_confirmation_email
-from .extended_user_serializer import ExtendedUserSerializer
+from emails.views import send_confirmation_email, send_password_reset_email
+from .custom_serializers import ExtendedUserSerializer, UserSerializer
 from .models import ExtendedUser
+from emails.token_gen import token_generator
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -35,11 +38,11 @@ def is_admin(user):
 
 
 @api_view(['GET'])
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def get_all_users(request):
-    users = ExtendedUser.objects.all()
-    serializer = ExtendedUserSerializer(users, many=True)
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
     return Response(serializer.data)
 
 
@@ -119,6 +122,30 @@ def signup_user(request):
     send_confirmation_email(request._request, user)
     return HttpResponse("Awaiting confirmation...")
 
+@api_view(['GET'])
+def reset_password_request(request, user_id):
+    user = User.objects.get(id = user_id)
+    send_password_reset_email(request, user)
+    return HttpResponse('Reset password Email sent!')
+
+@api_view(['GET'])
+def password_reset_check_token(request, uidb64, token):
+    uid = force_str(urlsafe_b64decode(uidb64))
+    user = User.objects.get(pk=uid)
+
+    if token_generator.check_token(user, token):
+        # can reset password
+        return JsonResponse({'can_reset' : True})
+    else:
+        # invalid url, can't reset password
+        return JsonResponse({'can_reset' : False})
+
+@api_view(['POST'])
+def reset_user_password(request, id):
+    user = User.objects.get(id=id)
+    new_password = request.POST.get('new_password')
+    user.set_password(new_password)
+    user.save()
 
 @api_view(['POST'])
 @login_required
