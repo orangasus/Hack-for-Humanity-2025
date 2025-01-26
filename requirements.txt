@@ -1,3 +1,4 @@
 Django==5.1.4
 djangorestframework
 django-allauth
+django-cors-headers
