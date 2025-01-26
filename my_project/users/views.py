@@ -1,7 +1,6 @@
 import logging
 from base64 import urlsafe_b64decode
 
-from adodbapi import IntegrityError
 from django.contrib.auth import authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
@@ -108,7 +107,7 @@ def signup_user(request):
 
     try:
         user = User.objects.create_user(username=username, password=password, email=email)
-    except IntegrityError:
+    except:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     else:
         user.is_active = False
