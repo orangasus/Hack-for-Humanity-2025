@@ -24,5 +24,5 @@ class Review(models.Model):
     date_created = models.DateField(auto_now_add=True)
     review_status = models.IntegerField(choices=ReviewStatus.choices(), default=ReviewStatus.UNDER_REVIEW)
 
-    user = models.ForeignKey('users.ExtendedUser', name='author', on_delete=models.CASCADE)
-    course = models.ForeignKey('courses.Course', name='course_reviewed', on_delete=models.DO_NOTHING)
+    user = models.ForeignKey('users.ExtendedUser', related_name='reviews', on_delete=models.CASCADE)
+    course = models.ForeignKey('courses.Course', related_name='reviews', on_delete=models.DO_NOTHING)
