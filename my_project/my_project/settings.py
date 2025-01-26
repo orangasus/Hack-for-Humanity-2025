@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'allauth', 
     'allauth.account', 
     'allauth.socialaccount',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
@@ -58,6 +59,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
 ]
 
 REST_FRAMEWORK = {
@@ -149,3 +153,5 @@ EMAIL_USE_TLS = True  # Use TLS for secure connection
 EMAIL_HOST_USER = 'korhonencrow@gmail.com'  # Your SMTP server's email address
 EMAIL_HOST_PASSWORD = 'cibt zloh rxuy tegd'  # Your SMTP server's email password
 DEFAULT_FROM_EMAIL = 'orangasus@gmail.com'  # Default email address for sending emails
+
+CORS_ALLOW_ALL_ORIGINS = True
