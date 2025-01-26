@@ -9,6 +9,10 @@ from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required, user_passes_test
 from rest_framework.decorators import api_view, permission_classes
 import logging
+from rest_framework import generics
+from .models import Course
+from .courses_serializer import CourseSerializer
+from .courses_serializer import CourseRatingSerializer
 
 """
 Views responsible for operations with Course model
@@ -33,12 +37,29 @@ def get_course_by_id(request, course_id):
 @login_required
 @user_passes_test(is_admin)
 def create_course(request):
-    serializer = CourseSerializer(request.data)
+    serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class CourseSearchView(generics.ListAPIView):
+    serializer_class = CourseSerializer
+
+    def get_queryset(self):
+        university_id = self.kwargs['uni_id']
+        query = self.request.query_params.get('search_query', '')
+        return Course.objects.filter(university_id=university_id, course_name__icontains=query)
+
+class CourseRatingView(generics.UpdateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseRatingSerializer
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        # Update the ratings of professors teaching this course
+        for professor in instance.professors.all():
+            professor.update_rating()
 
 @api_view(['PUT'])
 @login_required

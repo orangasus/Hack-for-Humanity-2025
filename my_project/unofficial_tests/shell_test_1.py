@@ -6,7 +6,7 @@ from users.models import ExtendedUser
 from django.contrib.auth.models import User
 
 # Create a default user instance
-default_user = User.objects.create(username='default_user', password='password123')
+default_user = User.objects.create(username='new_unique_user', password='password123')
 
 # Create an extended user instance
 ext_user = ExtendedUser.objects.create(user=default_user, public_username='test_user')
