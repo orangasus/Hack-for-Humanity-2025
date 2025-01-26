@@ -17,3 +17,5 @@ but our main model is ExtendedUser
 
 **In Code**
 - Pls, if it's an instance of ExtendedUser, then use ex_user; if it's an instance of User - use user
+
+

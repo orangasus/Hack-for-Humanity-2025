@@ -25,7 +25,7 @@ class Course(models.Model):
     date_last_modified = models.DateField(auto_now=True)
     course_rating = models.IntegerField(
         validators=[MinValueValidator(MIN_COURSE_RATING), MaxValueValidator(MAX_COURSE_RATING)], default=MIN_COURSE_RATING)
-    review_status = models.IntegerField(choices=CourseStatus.choices(), default=CourseStatus.UNDER_REVIEW)
+    course_status = models.IntegerField(choices=CourseStatus.choices(), default=CourseStatus.UNDER_REVIEW)
 
-    university = models.ForeignKey('uni_prof.University', name='courses', on_delete=models.CASCADE)
-    professor = models.ManyToManyField('uni_prof.Professor', name='professors')
+    university = models.ForeignKey('uni_prof.University', related_name='courses', on_delete=models.CASCADE)
+    professors = models.ManyToManyField('uni_prof.Professor', related_name='courses')
