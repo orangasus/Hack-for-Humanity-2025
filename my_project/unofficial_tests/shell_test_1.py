@@ -1,6 +1,6 @@
 # Import the necessary models
-from uni_prof.models import University, Professor
 from courses.models import Course, CourseStatus
+from uni_prof.models import University, Professor
 from reviews.models import Review, ReviewStatus
 from users.models import ExtendedUser
 from django.contrib.auth.models import User
@@ -56,3 +56,25 @@ print(f"Professors for course 'Advanced CS': {[prof.first_name for prof in cours
 print(f"Professors for course 'Mathematics': {[prof.first_name for prof in course_math.professors.all()]}")
 print(f"Reviews for course 'Advanced CS': {[review.title for review in course_cs.reviews.all()]}")
 print(f"Reviews for course 'Mathematics': {[review.title for review in course_math.reviews.all()]}")
+
+# Verify data
+courses = Course.objects.all()
+for course in courses:
+    print(f"Course: {course.course_name}, Status: {course.course_status}")
+
+reviews = Review.objects.filter(course=course_cs)
+for review in reviews:
+    print(f"Review: {review.title}, Rating: {review.rating_left}")
+
+professors = University.objects.get(uni_name='Complex University').professors.all()
+for prof in professors:
+    print(f"Professor: {prof.first_name} {prof.last_name}")
+
+
+# Delete all records from models
+Course.objects.all().delete()
+Review.objects.all().delete()
+ExtendedUser.objects.all().delete()
+User.objects.all().delete()
+University.objects.all().delete()
+Professor.objects.all().delete()
