@@ -89,6 +89,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'my_project.wsgi.application'
+SITE_ID = 1
 
 
 # Database
