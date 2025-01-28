@@ -48,4 +48,3 @@ class Review(models.Model):
     def save(self, *args, **kwargs):
         self.calculate_overall_rating()
         super().save(*args, **kwargs)
-

@@ -1,10 +1,11 @@
 from django.shortcuts import render
 from rest_framework import generics
-from .models import Review
+from .models import Review,ReviewStatus
 from .serializers import ReviewSerializer
 from django.contrib.auth.decorators import login_required, user_passes_test
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 from .custom_responses import (
     LATEST_REVIEWS_RESPONSE, REVIEW_CREATED_RESPONSE, REVIEW_CREATION_ERROR,
     REVIEW_RETRIEVED_RESPONSE, REVIEW_UPDATED_RESPONSE, REVIEW_UPDATE_ERROR,
@@ -19,7 +20,7 @@ class LatestReviewsView(generics.ListAPIView):
     # Override the get_queryset method to return the latest 'n' reviews
     def get_queryset(self):
         n = int(self.request.query_params.get('n', 5))
-        reviews = Review.objects.order_by('-created_at')[:n]
+        reviews = Review.objects.order_by('-date_created')[:n]
         return reviews
 
     def list(self, request, *args, **kwargs):
@@ -74,3 +75,35 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(REVIEW_DELETED_RESPONSE, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response(REVIEW_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
+      
+
+
+
+
+class Reviews_Status_Update_View(generics.UpdateAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def update(self, request, *args, **kwargs):
+        review = get_object_or_404(Review, pk=kwargs['pk'])
+        new_status = request.data.get('review_status')  # Ensure we're using 'review_status'
+        if int(new_status) not in [status.value for status in ReviewStatus]:  # Ensure proper type conversion
+            return Response({"error": "Invalid status value."}, status=status.HTTP_400_BAD_REQUEST)
+
+        review.review_status = int(new_status)  # Ensure proper type conversion
+        review.save()
+        return Response({"status": "success"}, status=status.HTTP_200_OK)
+class Reviews_Status_List_View(generics.ListAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_queryset(self):
+        status = self.request.query_params.get('review_status')
+        if status and status.isdigit() and int(status) in [status.value for status in ReviewStatus]:
+            return Review.objects.filter(review_status=int(status))
+        return 
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

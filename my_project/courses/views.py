@@ -3,6 +3,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
 from .courses_serializer import CourseSerializer, CourseRatingSerializer
 from .custom_responses import (
@@ -11,7 +12,7 @@ from .custom_responses import (
     COURSE_DELETED_RESPONSE, COURSE_DELETION_ERROR, COURSE_LIST_RESPONSE,
     COURSE_SEARCH_RESPONSE, COURSE_RATING_UPDATED_RESPONSE, COURSE_RATING_UPDATE_ERROR
 )
-from .models import Course
+from .models import Course,CourseStatus
 
 """
 Views responsible for operations with Course model
@@ -77,6 +78,7 @@ class CourseRatingView(generics.UpdateAPIView):
 
 
 # View to search for courses within a specific university
+
 class CourseSearchView_Uni(generics.ListAPIView):
     serializer_class = CourseSerializer
 
@@ -118,6 +120,35 @@ def delete_course_by_id(request, course_id):
         except Exception as e:
             return Response(COURSE_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
+class Course_Status_Update_View(generics.UpdateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+
+    def update(self, request, *args, **kwargs):
+        course = get_object_or_404(Course, pk=kwargs['pk'])
+        new_status = request.data.get('course_status')
+        if int(new_status) not in [status.value for status in CourseStatus]:  # Ensure proper type conversion
+            return Response({"error": "Invalid status value."}, status=status.HTTP_400_BAD_REQUEST)
+
+        course.course_status = int(new_status)  # Ensure proper type conversion
+        course.save()
+        return Response({"status": "success"}, status=status.HTTP_200_OK)
+class Course_Status_List_View(generics.ListAPIView):
+    serializer_class = CourseSerializer
+
+    def get_queryset(self):
+        status = self.request.query_params.get('course_status')
+        if status and status.isdigit() and int(status) in [status.value for status in CourseStatus]:
+            return Course.objects.filter(course_status=int(status))
+        return 
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_all_courses(request):
