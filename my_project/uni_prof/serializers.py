@@ -11,6 +11,7 @@ class ProfessorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Professor
         fields = '__all__'
+
 class ProfessorRatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Professor

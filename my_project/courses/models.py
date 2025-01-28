@@ -1,6 +1,5 @@
 from enum import IntEnum
 
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models import Avg
 
@@ -39,8 +38,7 @@ class Course(models.Model):
     professors = models.ManyToManyField('uni_prof.Professor', related_name='courses')
 
     def update_rating(self):
-        avg_rating = self.reviews.aggregate(Avg('overall_rating'))['rating__avg']
-
+        avg_rating = self.reviews.aggregate(Avg('overall_rating'))['overall_rating__avg']
         avg_cog_load = self.reviews.aggregate(Avg('cognitive_load_rating'))['cognitive_load_rating__avg']
         avg_delivery_support = self.reviews.aggregate(Avg('delivery_support_rating'))['delivery_support_rating__avg']
         avg_engagement_enjoyment = self.reviews.aggregate(Avg('engagement_enjoyment_rating'))[
@@ -50,13 +48,13 @@ class Course(models.Model):
 
         self.avg_course_rating = avg_rating or MIN_COURSE_RATING
 
-        self.cognitive_load_rating = avg_cog_load or MIN_COURSE_RATING
-        self.delivery_support_rating = avg_delivery_support or MIN_COURSE_RATING
-        self.engagement_enjoyment_rating = avg_engagement_enjoyment or MIN_COURSE_RATING
-        self.usefulness_relevance_rating = avg_usefulness_relevance or MIN_COURSE_RATING
+        self.avg_cognitive_load_rating = round(avg_cog_load, 1) or MIN_COURSE_RATING
+        self.avg_delivery_support_rating = round(avg_delivery_support, 1) or MIN_COURSE_RATING
+        self.avg_engagement_enjoyment_rating = round(avg_engagement_enjoyment, 1) or MIN_COURSE_RATING
+        self.avg_usefulness_relevance_rating = round(avg_usefulness_relevance, 1) or MIN_COURSE_RATING
 
         self.save()
 
     def save(self, *args, **kwargs):
         self.has_reviews = self.reviews.exists()
-        super().save( *args, **kwargs)
+        super().save(*args, **kwargs)

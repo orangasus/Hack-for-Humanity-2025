@@ -1,79 +1,80 @@
+from django.contrib.auth.decorators import login_required, user_passes_test
+from rest_framework import generics
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from .courses_serializer import CourseSerializer, CourseRatingSerializer
+from .custom_responses import (
+    COURSE_RETRIEVED_RESPONSE, COURSE_NOT_FOUND_RESPONSE, COURSE_CREATED_RESPONSE,
+    COURSE_CREATION_ERROR, COURSE_UPDATED_RESPONSE, COURSE_UPDATE_ERROR,
+    COURSE_DELETED_RESPONSE, COURSE_DELETION_ERROR, COURSE_LIST_RESPONSE,
+    COURSE_SEARCH_RESPONSE, COURSE_RATING_UPDATED_RESPONSE, COURSE_RATING_UPDATE_ERROR
+)
 from .models import Course
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib.auth.decorators import login_required, user_passes_test
-from rest_framework.decorators import api_view, permission_classes
-import logging
-from rest_framework import generics
-from .models import Course
-from .courses_serializer import CourseSerializer
-from .courses_serializer import CourseRatingSerializer
-from django.db.models import Q
+
 """
 Views responsible for operations with Course model
 """
+
 
 # Helper function to check if user is an admin
 def is_admin(user):
     return user.is_staff or user.is_superuser
 
-# API view to get a course by ID
+
 @api_view(['GET'])
 def get_course_by_id(request, course_id):
     try:
         course = Course.objects.get(id=course_id)
-    except Course.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    serializer = CourseSerializer(course)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    except:
+        return Response(COURSE_NOT_FOUND_RESPONSE, status=status.HTTP_404_NOT_FOUND)
+    else:
+        serializer = CourseSerializer(course)
+        return Response(COURSE_RETRIEVED_RESPONSE(serializer.data), status=status.HTTP_200_OK)
 
-# API view to create a new course
+
 @api_view(['POST'])
-#@login_required
-#@user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def create_course(request):
     serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(COURSE_CREATED_RESPONSE(serializer.data), status=status.HTTP_201_CREATED)
+    return Response(COURSE_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
-# API view to update a course by ID
-@api_view(['PUT'])
-@login_required
-@user_passes_test(is_admin)
-def update_course_by_id(request, course_id):
-    try:
-        course = Course.objects.get(id=course_id)
-    except Course.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    serializer = CourseSerializer(course, data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# API view to delete a course by ID
-@api_view(['DELETE'])
-@login_required
-@user_passes_test(is_admin)
-def delete_course_by_id(request, course_id):
-    try:
-        course = Course.objects.get(id=course_id)
-    except Course.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    course.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
+class CourseSearchView(generics.ListAPIView):
+    serializer_class = CourseSerializer
 
-# API view to get all courses
-@api_view(['GET'])
-def get_all_courses(request):
-    courses = Course.objects.all()
-    serializer = CourseSerializer(courses, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    def get_queryset(self):
+        university_id = self.kwargs['uni_id']
+        query = self.request.query_params.get('search_query', '')
+        courses = Course.objects.filter(university_id=university_id, course_name__icontains=query)
+        return courses
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return Response(COURSE_SEARCH_RESPONSE(response.data), status=status.HTTP_200_OK)
+
+
+class CourseRatingView(generics.UpdateAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseRatingSerializer
+
+    # def perform_update(self, serializer):
+    #     instance = serializer.save()
+    #     # Update the ratings of professors teaching this course
+    #     for professor in instance.professors.all():
+    #         professor.update_rating()
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            return Response(COURSE_RATING_UPDATED_RESPONSE, status=status.HTTP_200_OK)
+        return Response(COURSE_RATING_UPDATE_ERROR(response.data), status=response.status_code)
+
 
 # View to search for courses within a specific university
 class CourseSearchView_Uni(generics.ListAPIView):
@@ -84,26 +85,42 @@ class CourseSearchView_Uni(generics.ListAPIView):
         university_id = self.kwargs['uni_id']
         query = self.request.query_params.get('search_query', '')
         return Course.objects.filter(university_id=university_id, course_name__icontains=query)
-    
-    # View to search for courses within a specific university
-class CourseSearchView(generics.ListAPIView):
-    serializer_class = CourseSerializer
-    # Override the get_queryset method to filter courses based on Course Name or Course Code
-    def get_queryset(self):
-        query = self.request.query_params.get('search_query', '')
-        return Course.objects.filter(
-            Q(course_name__icontains=query) | 
-            Q(course_code__icontains=query)
-        )
 
 
-# View to update course ratings
-class CourseRatingView(generics.UpdateAPIView):
-    queryset = Course.objects.all()
-    serializer_class = CourseRatingSerializer
+@api_view(['PUT'])
+@login_required
+@user_passes_test(is_admin)
+def update_course_by_id(request, course_id):
+    try:
+        course = Course.objects.get(id=course_id)
+    except:
+        return Response(COURSE_NOT_FOUND_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        serializer = CourseSerializer(course, request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(COURSE_UPDATED_RESPONSE(serializer.data), status=status.HTTP_200_OK)
+        return Response(COURSE_UPDATE_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
-    # Override the perform_update method to update professor ratings after updating the course rating
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        for professor in instance.professors.all():
-            professor.update_rating()
+
+@api_view(['DELETE'])
+@login_required
+@user_passes_test(is_admin)
+def delete_course_by_id(request, course_id):
+    try:
+        course = Course.objects.get(id=course_id)
+    except:
+        return Response(COURSE_NOT_FOUND_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        try:
+            course.delete()
+            return Response(COURSE_DELETED_RESPONSE, status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response(COURSE_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def get_all_courses(request):
+    courses = Course.objects.all()
+    serializer = CourseSerializer(courses, many=True)
+    return Response(COURSE_LIST_RESPONSE(serializer.data), status=status.HTTP_200_OK)

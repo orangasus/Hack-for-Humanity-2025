@@ -33,7 +33,7 @@ class Review(models.Model):
     usefulness_relevance_rating = models.IntegerField(
         validators=[MinValueValidator(MIN_COURSE_RATING), MaxValueValidator(MAX_COURSE_RATING)], default=MIN_COURSE_RATING)
 
-    overall_rating = models.DecimalField(decimal_places=1, max_digits=2)
+    overall_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
 
     user = models.ForeignKey('users.ExtendedUser', related_name='reviews', on_delete=models.CASCADE)
     course = models.ForeignKey('courses.Course', related_name='reviews', on_delete=models.DO_NOTHING)
@@ -44,7 +44,6 @@ class Review(models.Model):
                           MetricsWeights.ENGAGEMENT_ENJOYMENT * self.engagement_enjoyment_rating +
                           MetricsWeights.USEFULNESS_RELEVANCE * self.usefulness_relevance_rating) / 100
         self.overall_rating = round(overall_rating, 1)
-        self.save()
 
     def save(self, *args, **kwargs):
         self.calculate_overall_rating()

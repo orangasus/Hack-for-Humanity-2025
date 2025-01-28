@@ -11,10 +11,12 @@ class Professor(models.Model):
     last_name = models.CharField(max_length=20)
     date_added = models.DateField(auto_now_add=True)
 
+    rating = models.DecimalField(max_digits=2, decimal_places=1, blank=True)
+
     universities = models.ManyToManyField('uni_prof.University', related_name='professors')
 
     def update_rating(self):
-        if self.courses.exists():
-            avg_rating = self.courses.aggregate(Avg('course_rating'))['course_rating__avg']
-            self.rating = avg_rating if avg_rating is not None else 0
-            self
+        avg_rating = self.courses.aggregate(Avg('avg_course_rating'))['avg_course_rating__avg']
+        print(f"Avg Rating: {avg_rating}")
+        self.rating = avg_rating or None
+        self.save()
