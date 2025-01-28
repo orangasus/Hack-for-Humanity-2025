@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class ReviewsConfig(AppConfig):
+class AiModConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'reviews'
+    name = 'ai_mod'
 
     def ready(self):
-        import reviews.signals
+        import ai_mod.signals
