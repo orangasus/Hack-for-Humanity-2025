@@ -24,14 +24,39 @@ class Course(models.Model):
     course_code = models.CharField(max_length=30)
     date_added = models.DateField(auto_now_add=True)
     date_last_modified = models.DateField(auto_now=True)
-    course_rating = models.FloatField(
-        validators=[MinValueValidator(MIN_COURSE_RATING), MaxValueValidator(MAX_COURSE_RATING)], default=MIN_COURSE_RATING)
+    has_reviews = models.BooleanField(default=False)
+
     course_status = models.IntegerField(choices=CourseStatus.choices(), default=CourseStatus.UNDER_REVIEW)
+
+    avg_course_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
+
+    avg_cognitive_load_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
+    avg_delivery_support_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
+    avg_engagement_enjoyment_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
+    avg_usefulness_relevance_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
 
     university = models.ForeignKey('uni_prof.University', related_name='courses', on_delete=models.CASCADE)
     professors = models.ManyToManyField('uni_prof.Professor', related_name='courses')
 
     def update_rating(self):
-        avg_rating = self.reviews.aggregate(Avg('rating'))['rating__avg']
-        self.course_rating = avg_rating if avg_rating is not None else MIN_COURSE_RATING
+        avg_rating = self.reviews.aggregate(Avg('overall_rating'))['rating__avg']
+
+        avg_cog_load = self.reviews.aggregate(Avg('cognitive_load_rating'))['cognitive_load_rating__avg']
+        avg_delivery_support = self.reviews.aggregate(Avg('delivery_support_rating'))['delivery_support_rating__avg']
+        avg_engagement_enjoyment = self.reviews.aggregate(Avg('engagement_enjoyment_rating'))[
+            'engagement_enjoyment_rating__avg']
+        avg_usefulness_relevance = self.reviews.aggregate(Avg('usefulness_relevance_rating'))[
+            'usefulness_relevance_rating__avg']
+
+        self.avg_course_rating = avg_rating or MIN_COURSE_RATING
+
+        self.cognitive_load_rating = avg_cog_load or MIN_COURSE_RATING
+        self.delivery_support_rating = avg_delivery_support or MIN_COURSE_RATING
+        self.engagement_enjoyment_rating = avg_engagement_enjoyment or MIN_COURSE_RATING
+        self.usefulness_relevance_rating = avg_usefulness_relevance or MIN_COURSE_RATING
+
         self.save()
+
+    def save(self, *args, **kwargs):
+        self.has_reviews = self.reviews.exists()
+        super().save( *args, **kwargs)
