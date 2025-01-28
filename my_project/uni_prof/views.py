@@ -5,6 +5,11 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth.decorators import login_required, user_passes_test
+from .custom_responses import (
+    UNIVERSITY_CREATED_RESPONSE, UNIVERSITY_CREATION_ERROR,
+    PROFESSOR_CREATED_RESPONSE, PROFESSOR_CREATION_ERROR,
+    PROFESSOR_RATING_UPDATED_RESPONSE, PROFESSOR_RATING_UPDATE_ERROR
+)
 
 # Create your views here.
 # Helper function to check if user is an admin
@@ -18,12 +23,19 @@ class UniversitySearchView(generics.ListAPIView):
     # Override the get_queryset method to filter universities based on search query
     def get_queryset(self):
         query = self.request.query_params.get('search_query', '')
-        return University.objects.filter(title__icontains=query)
+        return University.objects.filter(uni_name__icontains=query)
+
 
 # View for updating professor ratings
 class ProfessorRatingView(generics.UpdateAPIView):
     queryset = Professor.objects.all()
     serializer_class = ProfessorRatingSerializer
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        if response.status_code == status.HTTP_200_OK:
+            return Response(PROFESSOR_RATING_UPDATED_RESPONSE, status=status.HTTP_200_OK)
+        return Response(PROFESSOR_RATING_UPDATE_ERROR(response.data), status=response.status_code)
 
 # API view for creating a university
 @api_view(['POST'])
@@ -34,8 +46,8 @@ def create_university(request):
 
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(UNIVERSITY_CREATED_RESPONSE, status=status.HTTP_201_CREATED)
+    return Response(UNIVERSITY_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
 # API view for creating a professor
 @api_view(['POST'])
@@ -46,8 +58,8 @@ def create_professor(request):
 
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(PROFESSOR_CREATED_RESPONSE, status=status.HTTP_201_CREATED)
+    return Response(PROFESSOR_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
 # API view for getting all professors
 @api_view(['GET'])

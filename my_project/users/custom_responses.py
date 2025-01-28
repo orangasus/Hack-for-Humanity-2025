@@ -1,5 +1,3 @@
-# responses.py
-
 USERNAME_TAKEN_RESPONSE = {
     "status": "error",
     "message": "Username already taken",

@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (get_all_courses, get_course_by_id, update_course_by_id, delete_course_by_id,
-                    create_course, CourseSearchView, CourseRatingView,CourseSearchView_Uni)
+                    create_course, CourseSearchView, CourseRatingView, CourseSearchView_Uni)
 
 urlpatterns = [
     path('get_course/<int:course_id>', get_course_by_id, name='get_course'),

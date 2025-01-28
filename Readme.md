@@ -19,3 +19,24 @@ but our main model is ExtendedUser
 - Pls, if it's an instance of ExtendedUser, then use ex_user; if it's an instance of User - use user
 
 
+# Frontend
+
+### User input
+**Course**
+- Name
+- Code
+- Professors
+- Uni
+
+<br>
+
+**Review**
+- Title
+- Body
+- Cognitive Load Rating
+- Delivery Support Rating
+- Engagement Enjoyment Rating
+- Usefulness Relevance Rating
+- Course
+
+
