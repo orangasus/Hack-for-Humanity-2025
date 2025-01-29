@@ -78,9 +78,7 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            course = instance.course
             instance.delete()
-            # course.update_rating()
             return Response(REVIEW_DELETED_RESPONSE, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response(REVIEW_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
