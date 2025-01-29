@@ -9,12 +9,13 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -26,7 +27,6 @@ SECRET_KEY = 'django-insecure-uioqxc7pgxr39vy(d#6)ahz&oy+t$)t^0lfsdx#2pd7a-wukv#
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -43,9 +43,9 @@ INSTALLED_APPS = [
     'uni_prof',
     'reviews',
     'emails',
-    'django.contrib.sites', 
-    'allauth', 
-    'allauth.account', 
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
     'allauth.socialaccount',
     'corsheaders',
     'ai_mod'
@@ -96,7 +96,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'my_project.wsgi.application'
 SITE_ID = 1
 
-
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
@@ -106,7 +105,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -126,7 +124,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -138,7 +135,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
@@ -147,12 +143,12 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-
+load_dotenv()
 EMAIL_HOST = 'smtp.gmail.com'  # Replace with your SMTP server
 EMAIL_PORT = 587  # SMTP port (e.g., 587 for TLS, 465 for SSL)
 EMAIL_USE_TLS = True  # Use TLS for secure connection
 EMAIL_HOST_USER = 'korhonencrow@gmail.com'  # Your SMTP server's email address
-EMAIL_HOST_PASSWORD = 'cibt zloh rxuy tegd'  # Your SMTP server's email password
+EMAIL_HOST_PASSWORD = os.getenv("GOOGLE_APP_PASSWORD")  # Your SMTP server's email password
 DEFAULT_FROM_EMAIL = 'orangasus@gmail.com'  # Default email address for sending emails
 
 CORS_ALLOW_ALL_ORIGINS = True
