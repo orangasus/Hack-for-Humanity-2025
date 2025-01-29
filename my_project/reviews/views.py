@@ -83,7 +83,13 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(REVIEW_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
       
 
-
+class Get_All_Reviews(generics.ListAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class Reviews_Status_Update_View(generics.UpdateAPIView):

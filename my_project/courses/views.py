@@ -154,3 +154,12 @@ def get_all_courses(request):
     courses = Course.objects.all()
     serializer = CourseSerializer(courses, many=True)
     return Response(COURSE_LIST_RESPONSE(serializer.data), status=status.HTTP_200_OK)
+
+
+class Get_All_Courses(generics.ListAPIView):
+    queryset = Course.objects.all()
+    serializer_class = CourseSerializer
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
