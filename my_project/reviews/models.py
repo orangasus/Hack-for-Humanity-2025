@@ -23,6 +23,8 @@ class Review(models.Model):
     body = models.TextField()
     date_created = models.DateField(auto_now_add=True)
     review_status = models.IntegerField(choices=ReviewStatus.choices(), default=ReviewStatus.UNDER_REVIEW)
+    nsfw_score = models.IntegerField(blank=True, null=True)
+    nsfw_passed = models.BooleanField(default=False)
 
     cognitive_load_rating = models.IntegerField(
         validators=[MinValueValidator(MIN_COURSE_RATING), MaxValueValidator(MAX_COURSE_RATING)], default=MIN_COURSE_RATING)

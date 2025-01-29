@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class UniProfConfig(AppConfig):
+class AiModConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'uni_prof'
+    name = 'ai_mod'
 
     # def ready(self):
-    #     import uni_prof.signals
+    #     import ai_mod.signals

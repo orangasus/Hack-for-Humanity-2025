@@ -1,5 +1,6 @@
-
+To Fix Now
+- check get_latest_reviews for bugs
 
 To Fix Later
-- Only one review per course from user
+- Uncomment one review per course from user check
 - Uncomment email check

@@ -1,5 +1,6 @@
 from django.forms import ValidationError
 from django.shortcuts import render
+from numpy.lib.function_base import insert
 from rest_framework import generics
 from .models import Review,ReviewStatus
 from .serializers import ReviewSerializer
@@ -37,17 +38,19 @@ class ReviewCreateView(generics.CreateAPIView):
 
     # Override the perform_create method to update the course rating after creating a review
     def perform_create(self, serializer):
-        user = self.request.user
-        course = serializer.validated_data['course']
-        if Review.objects.filter(user=user, course=course).exists():
-            raise ValidationError("You have already reviewed this course.")
+        # user = self.request.user
+        # course = serializer.validated_data['course']
+        # if Review.objects.filter(user=user, course=course).exists():
+        #     raise ValidationError("You have already reviewed this course.")
+
         instance = serializer.save()
-        instance.course.update_rating()
+        # instance.course.update_rating()
 
     def create(self, request, *args, **kwargs):
         try:
             response = super().create(request, *args, **kwargs)
             if response.status_code == status.HTTP_201_CREATED:
+
                 return Response({"status": "Review created successfully", "data": response.data}, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -71,16 +74,11 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(REVIEW_UPDATED_RESPONSE(response.data), status=status.HTTP_200_OK)
         return Response(REVIEW_UPDATE_ERROR(response.data), status=response.status_code)
 
-    # def perform_update(self, serializer):
-    #     instance = serializer.save()
-    #     instance.course.update_rating()
 
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            course = instance.course
             instance.delete()
-            # course.update_rating()
             return Response(REVIEW_DELETED_RESPONSE, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response(REVIEW_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
