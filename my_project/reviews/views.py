@@ -44,7 +44,7 @@ class ReviewCreateView(generics.CreateAPIView):
         #     raise ValidationError("You have already reviewed this course.")
 
         instance = serializer.save()
-        instance.course.update_rating()
+        # instance.course.update_rating()
 
     def create(self, request, *args, **kwargs):
         try:
