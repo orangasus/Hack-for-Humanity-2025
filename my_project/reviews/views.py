@@ -1,6 +1,5 @@
 from django.forms import ValidationError
 from django.shortcuts import render
-from numpy.lib.function_base import insert
 from rest_framework import generics
 from .models import Review,ReviewStatus
 from .serializers import ReviewSerializer

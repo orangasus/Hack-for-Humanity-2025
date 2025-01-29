@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from .courses_serializer import CourseSerializer, CourseRatingSerializer
 from .custom_responses import (
@@ -44,17 +45,15 @@ def create_course(request):
         serializer.save()
         return Response(COURSE_CREATED_RESPONSE(serializer.data), status=status.HTTP_201_CREATED)
     return Response(COURSE_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
-
-
 class CourseSearchView(generics.ListAPIView):
     serializer_class = CourseSerializer
-
+    # Override the get_queryset method to filter courses based on Course Name or Course Code
     def get_queryset(self):
-        university_id = self.kwargs['uni_id']
         query = self.request.query_params.get('search_query', '')
-        courses = Course.objects.filter(university_id=university_id, course_name__icontains=query)
-        return courses
-
+        return Course.objects.filter(
+            Q(course_name__icontains=query) | 
+            Q(course_code__icontains=query)
+        )
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response(COURSE_SEARCH_RESPONSE(response.data), status=status.HTTP_200_OK)
