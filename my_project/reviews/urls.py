@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import LatestReviewsView, ReviewCreateView, ReviewDetailView,Reviews_Status_Update_View,Reviews_Status_List_View,Get_All_Reviews
+from .views import (LatestReviewsView, ReviewCreateView, ReviewDetailView,Reviews_Status_Update_View,
+                    Reviews_Status_List_View,Get_All_Reviews, get_reviews_for_course)
 
 # Define URL patterns for the review views
 urlpatterns = [
@@ -13,6 +14,7 @@ urlpatterns = [
     path('review/<int:pk>/status/', Reviews_Status_Update_View.as_view(), name='Review_status_update'),#http://127.0.0.1:8000/reviews/review/1/status/
     path('status/', Reviews_Status_List_View.as_view(), name='Review_status_list'),#/reviews/status/?review_status=<status_value>
     path('get_all_reviews/', Get_All_Reviews.as_view(), name='get_all_reviews'),
+    path('get_reviews_for_course/<int:course_id>', get_reviews_for_course, name='get_reviews_for_course')
     
 
 ]

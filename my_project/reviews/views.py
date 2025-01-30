@@ -1,6 +1,8 @@
 from django.forms import ValidationError
 from django.shortcuts import render
 from rest_framework import generics
+from rest_framework.decorators import api_view
+
 from .models import Review,ReviewStatus
 from .serializers import ReviewSerializer
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -90,6 +92,12 @@ class Get_All_Reviews(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def get_reviews_for_course(request, course_id):
+    reviews = Review.objects.filter(course=course_id, review_status=ReviewStatus.PASSED_REVIEW)
+    serializer = ReviewSerializer(reviews, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class Reviews_Status_Update_View(generics.UpdateAPIView):
