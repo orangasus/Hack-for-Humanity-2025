@@ -1,10 +1,10 @@
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
 
 from .courses_serializer import CourseSerializer, CourseRatingSerializer
 from .custom_responses import (
@@ -13,7 +13,7 @@ from .custom_responses import (
     COURSE_DELETED_RESPONSE, COURSE_DELETION_ERROR, COURSE_LIST_RESPONSE,
     COURSE_SEARCH_RESPONSE, COURSE_RATING_UPDATED_RESPONSE, COURSE_RATING_UPDATE_ERROR
 )
-from .models import Course,CourseStatus
+from .models import Course, CourseStatus
 
 """
 Views responsible for operations with Course model
@@ -25,6 +25,14 @@ def is_admin(user):
     return user.is_staff or user.is_superuser
 
 
+def get_profs_names_for_course(course):
+    return [prof.get_full_name() for prof in course.professors.all()]
+
+
+def get_uni_name_for_course(course):
+    return course.university.uni_name
+
+
 @api_view(['GET'])
 def get_course_by_id(request, course_id):
     try:
@@ -32,8 +40,11 @@ def get_course_by_id(request, course_id):
     except:
         return Response(COURSE_NOT_FOUND_RESPONSE, status=status.HTTP_404_NOT_FOUND)
     else:
+        profs = get_profs_names_for_course(course)
+        uni = get_uni_name_for_course(course)
+
         serializer = CourseSerializer(course)
-        return Response(COURSE_RETRIEVED_RESPONSE(serializer.data), status=status.HTTP_200_OK)
+        return Response(COURSE_RETRIEVED_RESPONSE(serializer.data, profs, uni), status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -45,15 +56,19 @@ def create_course(request):
         serializer.save()
         return Response(COURSE_CREATED_RESPONSE(serializer.data), status=status.HTTP_201_CREATED)
     return Response(COURSE_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+
+
 class CourseSearchView(generics.ListAPIView):
     serializer_class = CourseSerializer
+
     # Override the get_queryset method to filter courses based on Course Name or Course Code
     def get_queryset(self):
         query = self.request.query_params.get('search_query', '')
         return Course.objects.filter(
-            Q(course_name__icontains=query) | 
+            Q(course_name__icontains=query) |
             Q(course_code__icontains=query)
         )
+
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response(COURSE_SEARCH_RESPONSE(response.data), status=status.HTTP_200_OK)
@@ -120,8 +135,6 @@ def delete_course_by_id(request, course_id):
             return Response(COURSE_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 class Course_Status_Update_View(generics.UpdateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
@@ -135,6 +148,8 @@ class Course_Status_Update_View(generics.UpdateAPIView):
         course.course_status = int(new_status)  # Ensure proper type conversion
         course.save()
         return Response({"status": "success"}, status=status.HTTP_200_OK)
+
+
 class Course_Status_List_View(generics.ListAPIView):
     serializer_class = CourseSerializer
 
@@ -142,12 +157,13 @@ class Course_Status_List_View(generics.ListAPIView):
         status = self.request.query_params.get('course_status')
         if status and status.isdigit() and int(status) in [status.value for status in CourseStatus]:
             return Course.objects.filter(course_status=int(status))
-        return 
+        return
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def get_all_courses(request):
@@ -159,6 +175,7 @@ def get_all_courses(request):
 class Get_All_Courses(generics.ListAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)

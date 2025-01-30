@@ -1,19 +1,18 @@
 from django.forms import ValidationError
-from django.shortcuts import render
-from rest_framework import generics
-from rest_framework.decorators import api_view
-
-from .models import Review,ReviewStatus
-from .serializers import ReviewSerializer
-from django.contrib.auth.decorators import login_required, user_passes_test
-from rest_framework.response import Response
-from rest_framework import status
 from django.shortcuts import get_object_or_404
+from rest_framework import generics
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
 from .custom_responses import (
-    LATEST_REVIEWS_RESPONSE, REVIEW_CREATED_RESPONSE, REVIEW_CREATION_ERROR,
+    LATEST_REVIEWS_RESPONSE, REVIEW_CREATION_ERROR,
     REVIEW_RETRIEVED_RESPONSE, REVIEW_UPDATED_RESPONSE, REVIEW_UPDATE_ERROR,
     REVIEW_DELETED_RESPONSE, REVIEW_DELETION_ERROR, REVIEW_NOT_FOUND_RESPONSE
 )
+from .models import Review, ReviewStatus
+from .serializers import ReviewSerializer
+
 
 # Create your views here.
 # View to list the latest reviews
@@ -29,6 +28,7 @@ class LatestReviewsView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
         return Response(LATEST_REVIEWS_RESPONSE(response.data), status=status.HTTP_200_OK)
+
 
 # View to create a new review
 # @login_required
@@ -51,11 +51,12 @@ class ReviewCreateView(generics.CreateAPIView):
         try:
             response = super().create(request, *args, **kwargs)
             if response.status_code == status.HTTP_201_CREATED:
-
-                return Response({"status": "Review created successfully", "data": response.data}, status=status.HTTP_201_CREATED)
+                return Response({"status": "Review created successfully", "data": response.data},
+                                status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(REVIEW_CREATION_ERROR(response.data), status=response.status_code)
+
 
 # View to retrieve, update, or delete a review
 # @login_required
@@ -75,7 +76,6 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(REVIEW_UPDATED_RESPONSE(response.data), status=status.HTTP_200_OK)
         return Response(REVIEW_UPDATE_ERROR(response.data), status=response.status_code)
 
-
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -83,15 +83,17 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(REVIEW_DELETED_RESPONSE, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response(REVIEW_DELETION_ERROR(str(e)), status=status.HTTP_400_BAD_REQUEST)
-      
+
 
 class Get_All_Reviews(generics.ListAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 @api_view(['GET'])
 def get_reviews_for_course(request, course_id):
@@ -113,6 +115,8 @@ class Reviews_Status_Update_View(generics.UpdateAPIView):
         review.review_status = int(new_status)  # Ensure proper type conversion
         review.save()
         return Response({"status": "success"}, status=status.HTTP_200_OK)
+
+
 class Reviews_Status_List_View(generics.ListAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -121,7 +125,7 @@ class Reviews_Status_List_View(generics.ListAPIView):
         status = self.request.query_params.get('review_status')
         if status and status.isdigit() and int(status) in [status.value for status in ReviewStatus]:
             return Review.objects.filter(review_status=int(status))
-        return 
+        return
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

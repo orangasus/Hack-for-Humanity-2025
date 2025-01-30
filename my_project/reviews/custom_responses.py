@@ -20,7 +20,7 @@ REVIEW_CREATION_ERROR = lambda errors: {
     "code": "REVIEW_CREATION_FAILED"
 }
 
-REVIEW_RETRIEVED_RESPONSE = lambda data: {
+REVIEW_RETRIEVED_RESPONSE = lambda data : {
     "status": "success",
     "message": "Review retrieved successfully",
     "code": "REVIEW_RETRIEVED",

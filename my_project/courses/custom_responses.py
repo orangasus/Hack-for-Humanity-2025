@@ -1,7 +1,9 @@
-COURSE_RETRIEVED_RESPONSE = lambda data: {
+COURSE_RETRIEVED_RESPONSE = lambda data, profs, uni: {
     "status": "success",
     "message": "Course retrieved successfully",
     "data": data,
+    "professors": profs,
+    "university": uni,
     "code": "COURSE_RETRIEVED"
 }
 

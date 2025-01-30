@@ -19,3 +19,6 @@ class Professor(models.Model):
         avg_rating = self.courses.aggregate(Avg('avg_course_rating'))['avg_course_rating__avg']
         self.rating = avg_rating or None
         self.save()
+
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
