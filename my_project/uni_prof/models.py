@@ -10,7 +10,7 @@ class Professor(models.Model):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
 
-    full_name = models.CharField(max_length=50, blank=True)
+    full_name = models.CharField(max_length=50, blank=True, null=True)
     date_added = models.DateField(auto_now_add=True)
 
     rating = models.DecimalField(max_digits=2, decimal_places=1, blank=True, null=True)
