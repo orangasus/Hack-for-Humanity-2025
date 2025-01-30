@@ -181,3 +181,11 @@ DELETE_SESSION_ERROR_RESPONSE = lambda error_message: {
     "message": str(error_message),
     "code": "SESSION_DATA_CLEAR_FAILED"
 }
+
+
+USER_LIST_RESPONSE = lambda data: {
+    "status": "success",
+    "message": "Users retrieved successfully",
+    "data": data,
+    "code": "USER_LIST"
+}

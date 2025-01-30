@@ -20,7 +20,7 @@ from .custom_responses import USER_DELETED_RESPONSE, USER_DELETED_ERROR, USER_UP
     SERVER_ERROR_RESPONSE, USERNAME_TAKEN_RESPONSE, EMAIL_TAKEN_RESPONSE, USER_SIGNUP_RESPONSE, USER_SIGNUP_ERROR, \
     RESET_PASSWORD_REQUEST_ERROR, RESET_PASSWORD_REQUEST_RESPONSE, RESET_PASSWORD_CHECK_TOKEN_RESPONSE, \
     RESET_PASSWORD_CHECK_TOKEN_ERROR, PASSWORD_CHANGED, PASSWORD_CHANGED_ERROR, LOGOUT_SUCCESS_RESPONSE, \
-    LOGOUT_ERROR_RESPONSE
+    LOGOUT_ERROR_RESPONSE,USER_LIST_RESPONSE
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -45,8 +45,8 @@ def is_admin(user):
 
 
 @api_view(['GET'])
-# @login_required
-# @user_passes_test(is_admin)
+#@login_required
+#@user_passes_test(is_admin)
 def get_all_users(request):
     ex_users = ExtendedUser.objects.all()
     serializer = ExtendedUserSerializer(ex_users, many=True)
@@ -66,8 +66,8 @@ def delete_user_by_id(request, ex_user_id):
 
 
 @api_view(['PUT'])
-# @login_required
-# @user_passes_test(is_admin)
+@login_required
+@user_passes_test(is_admin)
 def update_user_by_id(request, ex_user_id):
     try:
         user_to_update = ExtendedUser.objects.get(id=ex_user_id)
@@ -81,8 +81,8 @@ def update_user_by_id(request, ex_user_id):
 
 
 @api_view(['GET'])
-@login_required
-@user_passes_test(is_admin)
+#@login_required
+#@user_passes_test(is_admin)
 def get_user_by_id(request, ex_user_id):
     try:
         user_to_get = ExtendedUser.objects.get(id=ex_user_id)
@@ -107,15 +107,32 @@ def login_user(request):
         return Response(SERVER_ERROR_RESPONSE(e), status=status.HTTP_404_NOT_FOUND)
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 @api_view(['POST'])
 def signup_user(request):
+    # Log the request data
+    logger.debug(f"Request data: {request.data}")
+
+    # Ensure request.data is a dictionary
+    if not isinstance(request.data, dict):
+        return Response({"detail": "Invalid data format"}, status=status.HTTP_400_BAD_REQUEST)
+
     username = request.data.get('username')
     password = request.data.get('password')
     email = request.data.get('email')
 
+    # Check if the username is provided and not empty
+    if not username or username.strip() == "":
+        logger.error("Username is missing or empty")
+        return Response({"status": "error", "message": "The given username must be set", "code": "USER_SIGNUP_ERROR"}, status=status.HTTP_400_BAD_REQUEST)
+
     if check_if_username_exists(username):
         return Response(USERNAME_TAKEN_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
 
+    # Uncomment this line if you want to check for email uniqueness
     # if check_if_email_exists(email):
     #     return Response(EMAIL_TAKEN_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
 
@@ -129,10 +146,11 @@ def signup_user(request):
         send_confirmation_email(request._request, ex_user)
         return Response(USER_SIGNUP_RESPONSE, status=status.HTTP_201_CREATED)
     except IntegrityError:
-        pass
+        logger.error("Integrity error, possibly due to a duplicate entry")
+        return Response({"detail": "Integrity error, possibly due to a duplicate entry"}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
+        logger.error(f"An error occurred: {e}")
         return Response(USER_SIGNUP_ERROR(e), status=status.HTTP_400_BAD_REQUEST)
-
 
 def check_if_username_exists(username):
     return User.objects.filter(username=username).exists()
