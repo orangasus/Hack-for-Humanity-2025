@@ -23,8 +23,8 @@ This is backend repository of our project, please see full project repository he
 - Eden AI API for AI moderation
 
 ### Contributors
- - Caleb, Team Captain
- - Nikolas, Programmer
+ - Caleb ([@orangasus](https://github.com/orangasus)), Team Captain
+ - Nikolas ([@nainkristy](https://github.com/nainkristy)), Programmer
 
 
 
