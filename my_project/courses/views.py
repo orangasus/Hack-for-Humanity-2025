@@ -26,7 +26,7 @@ def is_admin(user):
 
 
 def get_profs_names_for_course(course):
-    return [prof.get_full_name() for prof in course.professors.all()]
+    return [prof.full_name for prof in course.professors.all()]
 
 
 def get_uni_name_for_course(course):
