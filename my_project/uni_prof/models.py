@@ -9,9 +9,11 @@ class University(models.Model):
 class Professor(models.Model):
     first_name = models.CharField(max_length=20)
     last_name = models.CharField(max_length=20)
+
+    full_name = models.CharField(max_length=50, blank=True)
     date_added = models.DateField(auto_now_add=True)
 
-    rating = models.DecimalField(max_digits=2, decimal_places=1, blank=True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, blank=True, null=True)
 
     universities = models.ManyToManyField('uni_prof.University', related_name='professors')
 
@@ -20,5 +22,6 @@ class Professor(models.Model):
         self.rating = avg_rating or None
         self.save()
 
-    def get_full_name(self):
-        return f"{self.first_name} {self.last_name}"
+    def save(self, *args, **kwargs):
+        self.full_name=f"{self.first_name} {self.last_name}"
+        super().save(*args, **kwargs)

@@ -32,6 +32,17 @@ def get_uni_info_by_id(request, uni_id):
                                             profs_serializer.data, courses_serializer.data),
                     status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+def search_profs_by_name(request):
+    query = request.GET.get('query')
+    print(query)
+    if query:
+        profs = Professor.objects.filter(full_name__icontains=query)
+    else:
+        profs = Professor.objects.all()
+    serializer = ProfessorSerializer(profs, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 # View for searching universities
 class UniversitySearchView(generics.ListAPIView):
     serializer_class = UniversitySerializer
@@ -55,8 +66,8 @@ class ProfessorRatingView(generics.UpdateAPIView):
 
 # API view for creating a university
 @api_view(['POST'])
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def create_university(request):
     serializer = UniversitySerializer(data=request.data)
 
@@ -67,14 +78,14 @@ def create_university(request):
 
 # API view for creating a professor
 @api_view(['POST'])
-@login_required
-@user_passes_test(is_admin)
+# @login_required
+# @user_passes_test(is_admin)
 def create_professor(request):
     serializer = ProfessorSerializer(data=request.data)
 
     if serializer.is_valid():
         serializer.save()
-        return Response(PROFESSOR_CREATED_RESPONSE, status=status.HTTP_201_CREATED)
+        return Response(PROFESSOR_CREATED_RESPONSE(serializer.data), status=status.HTTP_201_CREATED)
     return Response(PROFESSOR_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
 # API view for getting all professors

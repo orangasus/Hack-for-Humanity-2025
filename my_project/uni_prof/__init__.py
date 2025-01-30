@@ -1,1 +1,1 @@
-default_app_config = 'uni_prof.apps.AiModConfig'
+default_app_config = 'uni_prof.apps.UniProfConfig'
