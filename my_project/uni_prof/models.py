@@ -17,6 +17,5 @@ class Professor(models.Model):
 
     def update_rating(self):
         avg_rating = self.courses.aggregate(Avg('avg_course_rating'))['avg_course_rating__avg']
-        print(f"Avg Rating: {avg_rating}")
         self.rating = avg_rating or None
         self.save()
