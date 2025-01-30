@@ -38,3 +38,12 @@ PROFESSOR_RATING_UPDATE_ERROR = lambda errors: {
     "errors": errors,
     "code": "PROFESSOR_RATING_UPDATE_ERROR"
 }
+
+UNI_INFO_BY_ID_RESPONSE = lambda uni, profs, courses: {
+    "status": "success",
+    "message": "We rly need pages",
+    "code": "UNI_INFO_BY_ID_SUCCESS",
+    "university": uni,
+    "professors": profs,
+    "courses": courses
+}
