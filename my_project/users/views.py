@@ -20,7 +20,7 @@ from .custom_responses import USER_DELETED_RESPONSE, USER_DELETED_ERROR, USER_UP
     SERVER_ERROR_RESPONSE, USERNAME_TAKEN_RESPONSE, EMAIL_TAKEN_RESPONSE, USER_SIGNUP_RESPONSE, USER_SIGNUP_ERROR, \
     RESET_PASSWORD_REQUEST_ERROR, RESET_PASSWORD_REQUEST_RESPONSE, RESET_PASSWORD_CHECK_TOKEN_RESPONSE, \
     RESET_PASSWORD_CHECK_TOKEN_ERROR, PASSWORD_CHANGED, PASSWORD_CHANGED_ERROR, LOGOUT_SUCCESS_RESPONSE, \
-    LOGOUT_ERROR_RESPONSE,USER_LIST_RESPONSE
+    LOGOUT_ERROR_RESPONSE,USER_LIST_RESPONSE,GET_SESSION_ERROR_RESPONSE
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -209,10 +209,12 @@ def logout_user(request):
 def set_session(request):
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
-@api_view(['GET'])
+
 @login_required
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
+    if(value=='default_value'):
+        return Response(GET_SESSION_ERROR_RESPONSE(), status=status.HTTP_400_BAD_REQUEST)
     return HttpResponse(f'Session data: {value}')
 
 
