@@ -210,7 +210,7 @@ def set_session(request):
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
 
-@login_required
+@api_view(['GET'])
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
     if(value=='default_value'):
