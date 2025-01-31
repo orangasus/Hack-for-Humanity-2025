@@ -61,7 +61,7 @@ def send_confirmation_email(request, ex_user):
     message = render_to_string('confirmation_template.html',
                                {
                                    "user": ex_user.user,
-                                   "domain": 'ui.styro.dev',
+                                   "domain": 'uni.styro.dev',
                                    # char/digit -> byte representation (8bit for each char) -> encode64 (6bit for each char) (url-safe) representation
                                    "uid": generate_uidb64(ex_user.pk),
                                    "token": token_generator.make_token(ex_user)
