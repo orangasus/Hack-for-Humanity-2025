@@ -168,31 +168,39 @@ def check_if_email_exists(email):
 
 
 @api_view(['GET'])
-def reset_password_request(request, ex_user_id):
+def reset_password_request(request):
     try:
-        ex_user = ExtendedUser.objects.get(id=ex_user_id)
+        email = request.GET.get('email')
+        print(email)
+        user = User.objects.filter(email=email).first()
+        ex_user = ExtendedUser.objects.get(user=user)
         send_password_reset_email(request, ex_user)
         return Response(RESET_PASSWORD_REQUEST_RESPONSE, status=status.HTTP_200_OK)
     except Exception as e:
         return Response(RESET_PASSWORD_REQUEST_ERROR(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def password_reset_check_token(request, uidb64, token):
+@api_view(['POST'])
+def user_password_reset(request):
     try:
+        uidb64 = request.data.get('uidb64')
+        token = request.data.get('token')
+
         uid = force_str(urlsafe_b64decode(uidb64))
         ex_user = ExtendedUser.objects.get(pk=uid)
-        can_reset = token_generator.check_token(ex_user, token)
-        return Response(RESET_PASSWORD_CHECK_TOKEN_RESPONSE(can_reset), status=status.HTTP_202_ACCEPTED)
+
+        if token_generator.check_token(ex_user, token):
+            reset_user_password(request, uid)
+            return Response(RESET_PASSWORD_CHECK_TOKEN_RESPONSE(True), status=status.HTTP_202_ACCEPTED)
+        return Response(RESET_PASSWORD_CHECK_TOKEN_RESPONSE(False), status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response(RESET_PASSWORD_CHECK_TOKEN_ERROR(e), status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-def reset_user_password(request, ex_id):
+def reset_user_password(request, ex_user_id):
     try:
-        ex_user = ExtendedUser.objects.get(id=ex_id)
-        new_password = request.POST.get('new_password')
+        ex_user = ExtendedUser.objects.get(id=ex_user_id)
+        new_password = request.data.get('new_password')
         ex_user.user.set_password(new_password)
         ex_user.save()
         return Response(PASSWORD_CHANGED, status=status.HTTP_200_OK)
@@ -201,7 +209,6 @@ def reset_user_password(request, ex_id):
 
 
 @api_view(['POST'])
-
 def logout_user(request):
     try:
         logout(request)
