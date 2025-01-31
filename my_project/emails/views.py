@@ -7,6 +7,11 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode
+from django.shortcuts import redirect, get_object_or_404
+from django.utils.encoding import force_str
+from users.models import ExtendedUser
+from django.contrib.auth.models import User
+
 
 from .token_gen import token_generator
 from users.models import ExtendedUser
@@ -20,6 +25,34 @@ def check_login_status(request):
     #if not check_login_status(request):
         #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
 
+
+
+def activate_account(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_b64decode(uidb64))
+        ex_user = get_object_or_404(ExtendedUser, pk=uid)
+
+        if token_generator.check_token(ex_user, token):
+            ex_user.user.is_active = True
+            ex_user.user.save()
+            return redirect('https://uni.styro.dev/login/?response=verified')
+        else:
+            return redirect('https://uni.styro.dev/login/?response=not_verified')
+    except (TypeError, ValueError, OverflowError, ExtendedUser.DoesNotExist):
+        return redirect('https://uni.styro.dev/login/?response=not_verified')
+    
+
+
+#def activate_account(request, uidb64, token):
+   # uid = force_str(urlsafe_b64decode(uidb64))
+    #ex_user = ExtendedUser.objects.get(pk=uid)
+
+    #if token_generator.check_token(ex_user, token):
+        #ex_user.user.is_active = True
+        #ex_user.user.save()
+        #return HttpResponse('Account Confirmed!')
+    #else:
+        #return HttpResponse('Verification Failed :(')
 
 
 def send_confirmation_email(request, ex_user):
