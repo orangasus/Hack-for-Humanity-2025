@@ -25,10 +25,11 @@ from .custom_responses import USER_DELETED_RESPONSE, USER_DELETED_ERROR, USER_UP
 # Set up logging
 logger = logging.getLogger(__name__)
 
-def login_required(request):
+def check_login_status(request):
     value = request.session.get('user.id', 'default_value')
     if(value=='default_value'):
         return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_400_BAD_REQUEST)
+    return True
 
 # Helper function to assign user to a group programmatically
 def assign_user_to_group(username, group_name):
@@ -58,9 +59,10 @@ def get_all_users(request):
 
 
 @api_view(['DELETE'])
-@login_required
+
 @user_passes_test(is_admin)
 def delete_user_by_id(request, ex_user_id):
+    check_login_status()
     try:
         user_to_delete = ExtendedUser.objects.get(id=ex_user_id)
         user_to_delete.delete()
@@ -70,9 +72,10 @@ def delete_user_by_id(request, ex_user_id):
 
 
 @api_view(['PUT'])
-@login_required
+
 @user_passes_test(is_admin)
 def update_user_by_id(request, ex_user_id):
+    check_login_status()
     try:
         user_to_update = ExtendedUser.objects.get(id=ex_user_id)
         serializer = ExtendedUserSerializer(user_to_update, data=request.data, partial=True)
@@ -198,7 +201,7 @@ def reset_user_password(request, ex_id):
 
 
 @api_view(['POST'])
-@login_required
+
 def logout_user(request):
     try:
         logout(request)
@@ -208,9 +211,9 @@ def logout_user(request):
         return Response(LOGOUT_ERROR_RESPONSE(e), status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
-@login_required
 @user_passes_test(is_admin)
 def set_session(request):
+    check_login_status()
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
 
@@ -224,9 +227,10 @@ def get_session(request):
 
 
 @api_view(['POST'])
-@login_required
+
 @user_passes_test(is_admin)
 def delete_session(request):
+    check_login_status()
     try:
         del request.session['user.id']
     except KeyError:
