@@ -95,7 +95,7 @@ def send_password_reset_email(request, ex_user):
     message = render_to_string('password_reset.html',
                                {
                                    "user": ex_user,
-                                   "domain": '127.0.0.1:8000',
+                                   "domain": 'uni.styro.dev',
                                    # char/digit -> byte representation (8bit for each char) -> encode64 (6bit for each char) (url-safe) representation
                                    "uid": generate_uidb64(ex_user.pk),
                                    "token": token_generator.make_token(ex_user)
