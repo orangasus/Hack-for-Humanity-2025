@@ -11,6 +11,11 @@ CONFIRMATION_EMAIL_ERROR = lambda error_message: {
     "message": str(error_message),
     "code": "CONFIRMATION_EMAIL_FAILED"
 }
+GET_SESSION_ERROR_RESPONSE = lambda error_message: {
+    "status": "error",
+    "message": str(error_message),
+    "code": "SESSION_DATA_RETRIEVAL_FAILED"
+}
 
 ACCOUNT_ACTIVATED_RESPONSE = {
     "status": "success",

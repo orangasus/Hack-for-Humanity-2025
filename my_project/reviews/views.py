@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from .custom_responses import (
     LATEST_REVIEWS_RESPONSE, REVIEW_CREATION_ERROR,
     REVIEW_RETRIEVED_RESPONSE, REVIEW_UPDATED_RESPONSE, REVIEW_UPDATE_ERROR,
-    REVIEW_DELETED_RESPONSE, REVIEW_DELETION_ERROR, REVIEW_NOT_FOUND_RESPONSE
+    REVIEW_DELETED_RESPONSE, REVIEW_DELETION_ERROR, REVIEW_NOT_FOUND_RESPONSE,GET_SESSION_ERROR_RESPONSE
 )
 from .models import Review, ReviewStatus
 from .serializers import ReviewSerializer
@@ -43,11 +43,15 @@ class LatestReviewsView(generics.ListAPIView):
 # @login_required
 
 class ReviewCreateView(generics.CreateAPIView):
+
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     # Override the perform_create method to update the course rating after creating a review
     def perform_create(self, serializer):
+        request = self.request  # Ensure request is available
+        if not check_login_status(request):
+            return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
         # user = self.request.user
         # course = serializer.validated_data['course']
         # if Review.objects.filter(user=user, course=course).exists():
@@ -57,6 +61,9 @@ class ReviewCreateView(generics.CreateAPIView):
         # instance.course.update_rating()
 
     def create(self, request, *args, **kwargs):
+        request = self.request  # Ensure request is available
+        if not check_login_status(request):
+            return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
         try:
             response = super().create(request, *args, **kwargs)
             if response.status_code == status.HTTP_201_CREATED:

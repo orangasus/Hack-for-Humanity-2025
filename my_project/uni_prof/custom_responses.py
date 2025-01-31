@@ -19,6 +19,13 @@ PROFESSOR_CREATED_RESPONSE = lambda data: {
     "code": "PROFESSOR_CREATED"
 }
 
+GET_SESSION_ERROR_RESPONSE = lambda error_message: {
+    "status": "error",
+    "message": str(error_message),
+    "code": "SESSION_DATA_RETRIEVAL_FAILED"
+}
+
+
 PROFESSOR_CREATION_ERROR = lambda errors: {
     "status": "error",
     "message": "Error creating professor",

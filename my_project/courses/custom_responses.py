@@ -59,6 +59,13 @@ COURSE_LIST_RESPONSE = lambda data: {
     "code": "COURSE_LIST"
 }
 
+GET_SESSION_ERROR_RESPONSE = lambda error_message: {
+    "status": "error",
+    "message": str(error_message),
+    "code": "SESSION_DATA_RETRIEVAL_FAILED"
+}
+
+
 COURSE_SEARCH_RESPONSE = lambda data: {
     "status": "success",
     "message": "Course search results",
