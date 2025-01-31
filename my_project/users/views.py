@@ -203,13 +203,13 @@ def logout_user(request):
     except Exception as e:
         return Response(LOGOUT_ERROR_RESPONSE(e), status=status.HTTP_400_BAD_REQUEST)
 
-
+@api_view(['POST'])
 @login_required
 @user_passes_test(is_admin)
 def set_session(request):
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
-
+@api_view(['GET'])
 @login_required
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
@@ -217,7 +217,7 @@ def get_session(request):
 
 
 
-
+@api_view(['POST'])
 @login_required
 @user_passes_test(is_admin)
 def delete_session(request):
