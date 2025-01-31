@@ -2,7 +2,7 @@ import logging
 from base64 import urlsafe_b64decode
 
 from django.contrib.auth import authenticate, logout
-from django.contrib.auth.decorators import  user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
 from django.http import HttpResponse
@@ -13,27 +13,30 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from .custom_serializers import ExtendedUserSerializer
-from .models import ExtendedUser
 from .custom_responses import USER_DELETED_RESPONSE, USER_DELETED_ERROR, USER_UPDATE_ERROR, USER_NOT_FOUND_RESPONSE, \
     USER_LOGGED_IN_RESPONSE, AUTH_ERROR, \
-    SERVER_ERROR_RESPONSE, USERNAME_TAKEN_RESPONSE, EMAIL_TAKEN_RESPONSE, USER_SIGNUP_RESPONSE, USER_SIGNUP_ERROR, \
+    SERVER_ERROR_RESPONSE, USERNAME_TAKEN_RESPONSE, USER_SIGNUP_RESPONSE, USER_SIGNUP_ERROR, \
     RESET_PASSWORD_REQUEST_ERROR, RESET_PASSWORD_REQUEST_RESPONSE, RESET_PASSWORD_CHECK_TOKEN_RESPONSE, \
     RESET_PASSWORD_CHECK_TOKEN_ERROR, PASSWORD_CHANGED, PASSWORD_CHANGED_ERROR, LOGOUT_SUCCESS_RESPONSE, \
-    LOGOUT_ERROR_RESPONSE,USER_LIST_RESPONSE,GET_SESSION_ERROR_RESPONSE
+    LOGOUT_ERROR_RESPONSE, GET_SESSION_ERROR_RESPONSE
+from .custom_serializers import ExtendedUserSerializer
+from .models import ExtendedUser
 
 # Set up logging
 logger = logging.getLogger(__name__)
+
 
 def check_login_status(request):
     value = request.session.get('user.id', 'default_value')
     if value == 'default_value':
         return False
     return True
-    #insert this if in any needed function where the user must be logged in to access
-    #if not check_login_status(request):
-        #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
-    #add this if needed in a class request = self.request 
+    # insert this if in any needed function where the user must be logged in to access
+    # if not check_login_status(request):
+    # return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
+    # add this if needed in a class request = self.request
+
+
 # Helper function to assign user to a group programmatically
 def assign_user_to_group(username, group_name):
     try:
@@ -52,15 +55,12 @@ def is_admin(user):
     return user.is_staff or user.is_superuser
 
 
-
 @api_view(['GET'])
-#@user_passes_test(is_admin)
+# @user_passes_test(is_admin)
 def get_all_users(request):
     ex_users = ExtendedUser.objects.all()
     serializer = ExtendedUserSerializer(ex_users, many=True)
     return Response(serializer.data)
-    
-    
 
 
 @api_view(['DELETE'])
@@ -75,7 +75,6 @@ def delete_user_by_id(request, ex_user_id):
 
 
 @api_view(['PUT'])
-
 @user_passes_test(is_admin)
 def update_user_by_id(request, ex_user_id):
     try:
@@ -114,7 +113,6 @@ def login_user(request):
         return Response(SERVER_ERROR_RESPONSE(e), status=status.HTTP_404_NOT_FOUND)
 
 
-
 @api_view(['POST'])
 def signup_user(request):
     # Log the request data
@@ -131,7 +129,8 @@ def signup_user(request):
     # Check if the username is provided and not empty
     if not username or username.strip() == "":
         logger.error("Username is missing or empty")
-        return Response({"status": "error", "message": "The given username must be set", "code": "USER_SIGNUP_ERROR"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"status": "error", "message": "The given username must be set", "code": "USER_SIGNUP_ERROR"},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     if check_if_username_exists(username):
         return Response(USERNAME_TAKEN_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
@@ -151,10 +150,12 @@ def signup_user(request):
         return Response(USER_SIGNUP_RESPONSE, status=status.HTTP_201_CREATED)
     except IntegrityError:
         logger.error("Integrity error, possibly due to a duplicate entry")
-        return Response({"detail": "Integrity error, possibly due to a duplicate entry"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": "Integrity error, possibly due to a duplicate entry"},
+                        status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         logger.error(f"An error occurred: {e}")
         return Response(USER_SIGNUP_ERROR(e), status=status.HTTP_400_BAD_REQUEST)
+
 
 def check_if_username_exists(username):
     return User.objects.filter(username=username).exists()
@@ -214,28 +215,28 @@ def logout_user(request):
     except Exception as e:
         return Response(LOGOUT_ERROR_RESPONSE(e), status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 @user_passes_test(is_admin)
 def set_session(request):
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
 
+
 @api_view(['GET'])
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
-    if(value=='default_value'):
+    if (value == 'default_value'):
         return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_400_BAD_REQUEST)
     return HttpResponse(f'Session data: {value}')
 
 
-
 @api_view(['Deleate'])
-
 @user_passes_test(is_admin)
 def delete_session(request):
-        try:
-            del request.session['user.id']
-            print("AAA")
-        except KeyError:
-            pass
-        return HttpResponse('Session data cleared')
+    try:
+        del request.session['user.id']
+        print("AAA")
+    except KeyError:
+        pass
+    return HttpResponse('Session data cleared')

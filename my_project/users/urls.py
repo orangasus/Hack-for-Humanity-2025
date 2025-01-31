@@ -12,7 +12,7 @@ urlpatterns = [
     # URL pattern for updating a user by ID
     path('update_user/<int:user_id>', update_user_by_id, name='update_user'),
     # URL pattern for getting a user by ID
-    path('get_user/<int:user_id>', get_user_by_id, name='get_user'),
+    path('get_user/<int:ex_user_id>', get_user_by_id, name='get_user'),
 
     # URL pattern for user login
     path('login', login_user, name='login_user'),
