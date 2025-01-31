@@ -101,6 +101,7 @@ def login_user(request):
         ex_user = ExtendedUser.objects.get(user=user)
         if user:
             request.session["user.id"] = ex_user.id
+            request.session["user.username"] = ex_user.username
             return Response(USER_LOGGED_IN_RESPONSE, status=status.HTTP_200_OK)
         return Response(AUTH_ERROR, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
@@ -214,6 +215,11 @@ def set_session(request):
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
     return HttpResponse(f'Session data: {value}')
+
+def get_session_username(request):
+    value = request.session.get('user.username', 'default_value')
+    return HttpResponse(f'Session data: {value}')
+
 
 
 @login_required
