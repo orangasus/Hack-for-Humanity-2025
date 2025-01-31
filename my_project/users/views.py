@@ -2,7 +2,7 @@ import logging
 from base64 import urlsafe_b64decode
 
 from django.contrib.auth import authenticate, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import  user_passes_test
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
 from django.http import HttpResponse
@@ -25,6 +25,10 @@ from .custom_responses import USER_DELETED_RESPONSE, USER_DELETED_ERROR, USER_UP
 # Set up logging
 logger = logging.getLogger(__name__)
 
+def login_required(request):
+    value = request.session.get('user.id', 'default_value')
+    if(value=='default_value'):
+        return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_400_BAD_REQUEST)
 
 # Helper function to assign user to a group programmatically
 def assign_user_to_group(username, group_name):
