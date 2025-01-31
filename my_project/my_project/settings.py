@@ -79,13 +79,10 @@ ROOT_URLCONF = 'my_project.urls'
 
 # settings.py
 
-# Ensure that cookies are only sent over HTTPS
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-
-# Use the 'SameSite' attribute to prevent CSRF
-SESSION_COOKIE_SAMESITE = 'None'  # or 'Lax' based on your requirement
-CSRF_COOKIE_SAMESITE = 'None'  # or 'Lax' based on your requirement
+SESSION_COOKIE_DOMAIN = '.styro.dev'
+CSRF_COOKIE_DOMAIN = '.styro.dev'
 
 
 TEMPLATES = [
