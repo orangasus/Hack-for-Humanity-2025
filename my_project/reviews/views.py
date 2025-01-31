@@ -13,6 +13,15 @@ from .custom_responses import (
 from .models import Review, ReviewStatus
 from .serializers import ReviewSerializer
 
+def check_login_status(request):
+    value = request.session.get('user.id', 'default_value')
+    if value == 'default_value':
+        return False
+    return True
+    #insert this if in any needed function where the user must be logged in to access
+    #if not check_login_status(request):
+        #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
+
 
 # Create your views here.
 # View to list the latest reviews

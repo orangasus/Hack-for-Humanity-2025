@@ -11,6 +11,16 @@ from django.utils.http import urlsafe_base64_encode
 from .token_gen import token_generator
 from users.models import ExtendedUser
 
+def check_login_status(request):
+    value = request.session.get('user.id', 'default_value')
+    if value == 'default_value':
+        return False
+    return True
+    #insert this if in any needed function where the user must be logged in to access
+    #if not check_login_status(request):
+        #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
+
+
 
 def send_confirmation_email(request, ex_user):
     # domain = get_current_site(request).domain

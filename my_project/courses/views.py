@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
@@ -18,6 +18,14 @@ from .models import Course, CourseStatus
 """
 Views responsible for operations with Course model
 """
+def check_login_status(request):
+    value = request.session.get('user.id', 'default_value')
+    if value == 'default_value':
+        return False
+    return True
+    #insert this if in any needed function where the user must be logged in to access
+    #if not check_login_status(request):
+        #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
 
 
 # Helper function to check if user is an admin
@@ -48,7 +56,6 @@ def get_course_by_id(request, course_id):
 
 
 @api_view(['POST'])
-@login_required
 @user_passes_test(is_admin)
 def create_course(request):
     serializer = CourseSerializer(data=request.data)
@@ -104,7 +111,6 @@ class CourseSearchView_Uni(generics.ListAPIView):
 
 
 @api_view(['PUT'])
-@login_required
 @user_passes_test(is_admin)
 def update_course_by_id(request, course_id):
     try:
@@ -120,7 +126,6 @@ def update_course_by_id(request, course_id):
 
 
 @api_view(['DELETE'])
-@login_required
 @user_passes_test(is_admin)
 def delete_course_by_id(request, course_id):
     try:

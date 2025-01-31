@@ -4,7 +4,7 @@ from .serializers import UniversitySerializer, ProfessorRatingSerializer, Profes
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import  user_passes_test
 from .custom_responses import (
     UNIVERSITY_CREATED_RESPONSE, UNIVERSITY_CREATION_ERROR,
     PROFESSOR_CREATED_RESPONSE, PROFESSOR_CREATION_ERROR,
@@ -17,6 +17,16 @@ from courses.courses_serializer import CourseSerializer
 # Helper function to check if user is an admin
 def is_admin(user):
     return user.is_staff or user.is_superuser
+
+def check_login_status(request):
+    value = request.session.get('user.id', 'default_value')
+    if value == 'default_value':
+        return False
+    return True
+    #insert this if in any needed function where the user must be logged in to access
+    #if not check_login_status(request):
+        #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
+
 
 @api_view(['GET'])
 def get_uni_info_by_id(request, uni_id):
@@ -66,7 +76,6 @@ class ProfessorRatingView(generics.UpdateAPIView):
 
 # API view for creating a university
 @api_view(['POST'])
-# @login_required
 # @user_passes_test(is_admin)
 def create_university(request):
     serializer = UniversitySerializer(data=request.data)
@@ -78,7 +87,6 @@ def create_university(request):
 
 # API view for creating a professor
 @api_view(['POST'])
-# @login_required
 # @user_passes_test(is_admin)
 def create_professor(request):
     serializer = ProfessorSerializer(data=request.data)

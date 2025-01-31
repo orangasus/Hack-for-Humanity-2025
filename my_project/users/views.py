@@ -27,9 +27,12 @@ logger = logging.getLogger(__name__)
 
 def check_login_status(request):
     value = request.session.get('user.id', 'default_value')
-    if(value=='default_value'):
-        return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_400_BAD_REQUEST)
+    if value == 'default_value':
+        return False
     return True
+    #insert this if in any needed function where the user must be logged in to access
+    #if not check_login_status(request):
+        #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
 
 # Helper function to assign user to a group programmatically
 def assign_user_to_group(username, group_name):
@@ -49,20 +52,20 @@ def is_admin(user):
     return user.is_staff or user.is_superuser
 
 
+
 @api_view(['GET'])
-#@login_required
 #@user_passes_test(is_admin)
 def get_all_users(request):
     ex_users = ExtendedUser.objects.all()
     serializer = ExtendedUserSerializer(ex_users, many=True)
     return Response(serializer.data)
+    
+    
 
 
 @api_view(['DELETE'])
-
 @user_passes_test(is_admin)
 def delete_user_by_id(request, ex_user_id):
-    check_login_status()
     try:
         user_to_delete = ExtendedUser.objects.get(id=ex_user_id)
         user_to_delete.delete()
@@ -75,7 +78,6 @@ def delete_user_by_id(request, ex_user_id):
 
 @user_passes_test(is_admin)
 def update_user_by_id(request, ex_user_id):
-    check_login_status()
     try:
         user_to_update = ExtendedUser.objects.get(id=ex_user_id)
         serializer = ExtendedUserSerializer(user_to_update, data=request.data, partial=True)
@@ -88,8 +90,6 @@ def update_user_by_id(request, ex_user_id):
 
 
 @api_view(['GET'])
-#@login_required
-#@user_passes_test(is_admin)
 def get_user_by_id(request, ex_user_id):
     try:
         user_to_get = ExtendedUser.objects.get(id=ex_user_id)
@@ -114,9 +114,6 @@ def login_user(request):
         return Response(SERVER_ERROR_RESPONSE(e), status=status.HTTP_404_NOT_FOUND)
 
 
-import logging
-
-logger = logging.getLogger(__name__)
 
 @api_view(['POST'])
 def signup_user(request):
@@ -213,7 +210,6 @@ def logout_user(request):
 @api_view(['POST'])
 @user_passes_test(is_admin)
 def set_session(request):
-    check_login_status()
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
 
@@ -226,13 +222,13 @@ def get_session(request):
 
 
 
-@api_view(['POST'])
+@api_view(['Deleate'])
 
 @user_passes_test(is_admin)
 def delete_session(request):
-    check_login_status()
-    try:
-        del request.session['user.id']
-    except KeyError:
-        pass
-    return HttpResponse('Session data cleared')
+        try:
+            del request.session['user.id']
+            print("AAA")
+        except KeyError:
+            pass
+        return HttpResponse('Session data cleared')
