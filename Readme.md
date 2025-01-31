@@ -7,7 +7,7 @@ An anonymous feedback platform for university courses that features AI moderatio
 Users can search for courses or professors and view ratings based on scientifically selected metrics,
 as well as submit their own reviews
 
-This is backend repository of our project, please see full project repository here: <>
+This is backend repository of our project, please see [full project repo](https://github.com/orangasus/UnInsight-Platform) or check out the [website](https://uni.styro.dev/)
 
 
 ### Features
