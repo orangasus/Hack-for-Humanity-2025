@@ -29,7 +29,6 @@ urlpatterns = [
 
     path('delete_session/', delete_session, name='delete_session'),
 
-    path('reset_password/<uidb64>/<token>', user_password_reset, name='user_password_reset'),
-    # logic -> reset_password_request/<int:ex_user_id> -> reset_password/<uidb64>/<token> -> reset_password/<int:ex_user_id>
+    path('reset_password/', user_password_reset, name='user_password_reset'),
     path('reset_password_request/', reset_password_request, name='reset_password_request'),
 ]
