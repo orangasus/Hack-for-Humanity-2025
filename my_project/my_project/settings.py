@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'corsheaders',
-    'ai_mod'
+    'ai_mod',
+    'db_manager'
 ]
 
 MIDDLEWARE = [

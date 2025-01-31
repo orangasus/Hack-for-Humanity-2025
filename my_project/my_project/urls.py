@@ -25,5 +25,6 @@ urlpatterns = [
     path('emails/', include('emails.urls')),
     path('reviews/', include('reviews.urls')),
     path('uni_prof/', include('uni_prof.urls')),
-    path('ai_mod/', include('ai_mod.urls'))
+    path('ai_mod/', include('ai_mod.urls')),
+    path('db_manager/', include('db_manager.urls'))
 ]
