@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (get_all_users, delete_user_by_id, update_user_by_id,
                     get_user_by_id, login_user, logout_user, signup_user, set_session, get_session, delete_session,
-                    password_reset_check_token, reset_user_password, reset_password_request,get_session_username)
+                    password_reset_check_token, reset_user_password, reset_password_request)
 
 urlpatterns = [
     # URL pattern for getting all users
