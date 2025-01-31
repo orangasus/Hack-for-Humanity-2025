@@ -33,7 +33,7 @@ def check_login_status(request):
     #insert this if in any needed function where the user must be logged in to access
     #if not check_login_status(request):
         #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
-
+    #add this if needed in a class request = self.request 
 # Helper function to assign user to a group programmatically
 def assign_user_to_group(username, group_name):
     try:
