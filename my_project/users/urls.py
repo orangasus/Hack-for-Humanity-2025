@@ -26,8 +26,7 @@ urlpatterns = [
     # URL pattern for getting a session variable
     path('get_session/', get_session, name='get_session'),
      # URL pattern for getting a session variable
-    path('get_username/', get_session_username, name='get_session'),
-    # URL pattern for deleting a session variable
+ 
     path('delete_session/', delete_session, name='delete_session'),
 
     path('reset_password/<uidb64>/<token>', password_reset_check_token, name='password_reset_check_token'),
