@@ -151,4 +151,10 @@ EMAIL_HOST_USER = 'korhonencrow@gmail.com'  # Your SMTP server's email address
 EMAIL_HOST_PASSWORD = os.getenv("GOOGLE_APP_PASSWORD")  # Your SMTP server's email password
 DEFAULT_FROM_EMAIL = 'orangasus@gmail.com'  # Default email address for sending emails
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    'https://uni.styro.dev',
+    "http://localhost:3000",
+    "http://127.0.0.1:3001"
+]
+
+CORS_ALLOW_CREDENTIALS = True
