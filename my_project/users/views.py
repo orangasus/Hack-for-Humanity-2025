@@ -1,8 +1,6 @@
 import logging
 from base64 import urlsafe_b64decode
-
 from django.contrib.auth import authenticate, logout
-from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
 from django.http import HttpResponse
@@ -18,7 +16,7 @@ from .custom_responses import USER_DELETED_RESPONSE, USER_DELETED_ERROR, USER_UP
     SERVER_ERROR_RESPONSE, USERNAME_TAKEN_RESPONSE, USER_SIGNUP_RESPONSE, USER_SIGNUP_ERROR, \
     RESET_PASSWORD_REQUEST_ERROR, RESET_PASSWORD_REQUEST_RESPONSE, RESET_PASSWORD_CHECK_TOKEN_RESPONSE, \
     RESET_PASSWORD_CHECK_TOKEN_ERROR, PASSWORD_CHANGED, PASSWORD_CHANGED_ERROR, LOGOUT_SUCCESS_RESPONSE, \
-    LOGOUT_ERROR_RESPONSE, GET_SESSION_ERROR_RESPONSE
+    LOGOUT_ERROR_RESPONSE, GET_SESSION_ERROR_RESPONSE,EMAIL_TAKEN_RESPONSE
 from .custom_serializers import ExtendedUserSerializer
 from .models import ExtendedUser
 
@@ -56,16 +54,21 @@ def is_admin(user):
 
 
 @api_view(['GET'])
-# @user_passes_test(is_admin)
 def get_all_users(request):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     ex_users = ExtendedUser.objects.all()
     serializer = ExtendedUserSerializer(ex_users, many=True)
     return Response(serializer.data)
 
 
 @api_view(['DELETE'])
-@user_passes_test(is_admin)
+
 def delete_user_by_id(request, ex_user_id):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     try:
         user_to_delete = ExtendedUser.objects.get(id=ex_user_id)
         user_to_delete.delete()
@@ -75,8 +78,10 @@ def delete_user_by_id(request, ex_user_id):
 
 
 @api_view(['PUT'])
-@user_passes_test(is_admin)
 def update_user_by_id(request, ex_user_id):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     try:
         user_to_update = ExtendedUser.objects.get(id=ex_user_id)
         serializer = ExtendedUserSerializer(user_to_update, data=request.data, partial=True)
@@ -90,6 +95,9 @@ def update_user_by_id(request, ex_user_id):
 
 @api_view(['GET'])
 def get_user_by_id(request, ex_user_id):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     try:
         user_to_get = ExtendedUser.objects.get(id=ex_user_id)
         serializer = ExtendedUserSerializer(user_to_get)
@@ -217,8 +225,10 @@ def logout_user(request):
 
 
 @api_view(['POST'])
-@user_passes_test(is_admin)
 def set_session(request):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     request.session['key'] = 'value'
     return HttpResponse('Session data set')
 
@@ -232,8 +242,10 @@ def get_session(request):
 
 
 @api_view(['Delete'])
-@user_passes_test(is_admin)
 def delete_session(request):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     try:
         del request.session['user.id']
     except KeyError:

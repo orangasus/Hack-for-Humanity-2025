@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import user_passes_test
+
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
@@ -59,6 +59,9 @@ def get_course_by_id(request, course_id):
 # admin check
 def create_course(request):
     serializer = CourseSerializer(data=request.data)
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     if serializer.is_valid():
         try:
             professors_data = request.data.get('professors', [])
@@ -124,8 +127,10 @@ class CourseSearchView_Uni(generics.ListAPIView):
 
 
 @api_view(['PUT'])
-@user_passes_test(is_admin)
 def update_course_by_id(request, course_id):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     try:
         course = Course.objects.get(id=course_id)
     except:
@@ -139,8 +144,10 @@ def update_course_by_id(request, course_id):
 
 
 @api_view(['DELETE'])
-@user_passes_test(is_admin)
 def delete_course_by_id(request, course_id):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     try:
         course = Course.objects.get(id=course_id)
     except:

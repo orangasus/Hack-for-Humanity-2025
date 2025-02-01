@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from .custom_responses import (
     UNIVERSITY_CREATED_RESPONSE, UNIVERSITY_CREATION_ERROR,
     PROFESSOR_CREATED_RESPONSE, PROFESSOR_CREATION_ERROR,
-    PROFESSOR_RATING_UPDATED_RESPONSE, PROFESSOR_RATING_UPDATE_ERROR, UNI_INFO_BY_ID_RESPONSE
+    PROFESSOR_RATING_UPDATED_RESPONSE, PROFESSOR_RATING_UPDATE_ERROR, UNI_INFO_BY_ID_RESPONSE,GET_SESSION_ERROR_RESPONSE
 )
 from .models import University, Professor
 from .serializers import UniversitySerializer, ProfessorRatingSerializer, ProfessorSerializer
@@ -81,8 +81,10 @@ class ProfessorRatingView(generics.UpdateAPIView):
 
 # API view for creating a university
 @api_view(['POST'])
-# @user_passes_test(is_admin)
 def create_university(request):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     serializer = UniversitySerializer(data=request.data)
 
     if serializer.is_valid():
@@ -104,8 +106,10 @@ def get_prof_name_rating_by_id(request, prof_id):
 
 # API view for creating a professor
 @api_view(['POST'])
-# @user_passes_test(is_admin)
 def create_professor(request):
+    user = request.user
+    if not is_admin(user):
+      return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     serializer = ProfessorSerializer(data=request.data)
 
     if serializer.is_valid():

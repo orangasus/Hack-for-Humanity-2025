@@ -1,6 +1,7 @@
 from base64 import urlsafe_b64decode
 from email.message import EmailMessage
-
+from rest_framework.response import Response
+from rest_framework import status
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.http import HttpResponse
@@ -11,10 +12,8 @@ from django.shortcuts import redirect, get_object_or_404
 from django.utils.encoding import force_str
 from users.models import ExtendedUser
 from django.contrib.auth.models import User
-
-
 from .token_gen import token_generator
-from users.models import ExtendedUser
+from .custom_responses import *
 
 def check_login_status(request):
     value = request.session.get('user.id', 'default_value')
@@ -24,35 +23,6 @@ def check_login_status(request):
     #insert this if in any needed function where the user must be logged in to access
     #if not check_login_status(request):
         #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
-
-
-
-def activate_account(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_b64decode(uidb64))
-        ex_user = get_object_or_404(ExtendedUser, pk=uid)
-
-        if token_generator.check_token(ex_user, token):
-            ex_user.user.is_active = True
-            ex_user.user.save()
-            return redirect('https://uni.styro.dev/login/?response=verified')
-        else:
-            return redirect('https://uni.styro.dev/login/?response=not_verified')
-    except (TypeError, ValueError, OverflowError, ExtendedUser.DoesNotExist):
-        return redirect('https://uni.styro.dev/login/?response=not_verified')
-    
-
-
-#def activate_account(request, uidb64, token):
-   # uid = force_str(urlsafe_b64decode(uidb64))
-    #ex_user = ExtendedUser.objects.get(pk=uid)
-
-    #if token_generator.check_token(ex_user, token):
-        #ex_user.user.is_active = True
-        #ex_user.user.save()
-        #return HttpResponse('Account Confirmed!')
-    #else:
-        #return HttpResponse('Verification Failed :(')
 
 
 def send_confirmation_email(request, ex_user):
@@ -86,10 +56,10 @@ def activate_account(request, uidb64, token):
     if token_generator.check_token(ex_user, token):
         ex_user.user.is_active = True
         ex_user.user.save()
-        return HttpResponse('Account Confirmed!')
+        return Response(ACCOUNT_ACTIVATED_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     else:
-        return HttpResponse('Verification Failed :(')
-
+        return Response(ACTIVATION_FAILED_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
+    
 def send_password_reset_email(request, ex_user):
     mail_subject = 'Resetting Password'
     message = render_to_string('password_reset.html',
