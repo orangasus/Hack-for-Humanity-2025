@@ -5,6 +5,7 @@ from django.contrib.auth.models import User, Group
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.encoding import force_str
+from django.http import JsonResponse
 from emails.token_gen import token_generator
 from emails.views import send_confirmation_email, send_password_reset_email
 from rest_framework import status
@@ -237,9 +238,8 @@ def set_session(request):
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
     if value == 'default_value':
-        return Response("Invalid", status=status.HTTP_200_OK)
-    return HttpResponse(f'Session data: {value}')
-
+        return JsonResponse({"code": 200, "message": "Invalid"})
+    return JsonResponse({"code": 200, "message": "Valid", "session_data": value})
 
 @api_view(['Delete'])
 def delete_session(request):
