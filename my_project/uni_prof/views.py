@@ -82,7 +82,7 @@ def create_university(request):
 
     if serializer.is_valid():
         serializer.save()
-        return Response(UNIVERSITY_CREATED_RESPONSE, status=status.HTTP_201_CREATED)
+        return Response(UNIVERSITY_CREATED_RESPONSE(serializer.data), status=status.HTTP_201_CREATED)
     return Response(UNIVERSITY_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
 # API view for creating a professor

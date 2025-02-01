@@ -56,13 +56,26 @@ def get_course_by_id(request, course_id):
 
 
 @api_view(['POST'])
-@user_passes_test(is_admin)
+# admin check
 def create_course(request):
     serializer = CourseSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
-        return Response(COURSE_CREATED_RESPONSE(serializer.data), status=status.HTTP_201_CREATED)
-    return Response(COURSE_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+        try:
+            professors_data = request.data.get('professors', [])
+            if not isinstance(professors_data, list):
+                return Response({'error': 'Professors data should be a list.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            course = serializer.save()  # Save the Course instance to get the primary key
+            course.professors.set(professors_data)  # Set the list of professors
+            course.save()
+
+            return Response({'message': 'Course created successfully!', 'course': serializer.data},
+                            status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(e)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class CourseSearchView(generics.ListAPIView):

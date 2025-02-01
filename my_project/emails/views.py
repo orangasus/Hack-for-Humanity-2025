@@ -1,15 +1,16 @@
 from base64 import urlsafe_b64decode
 from email.message import EmailMessage
 
-from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode
+from rest_framework import status
 
 from .token_gen import token_generator
 from users.models import ExtendedUser
+from rest_framework.response import Response
 
 def check_login_status(request):
     value = request.session.get('user.id', 'default_value')
@@ -53,9 +54,9 @@ def activate_account(request, uidb64, token):
     if token_generator.check_token(ex_user, token):
         ex_user.user.is_active = True
         ex_user.user.save()
-        return HttpResponse('Account Confirmed!')
+        return Response(status=status.HTTP_200_OK)
     else:
-        return HttpResponse('Verification Failed :(')
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 def send_password_reset_email(request, ex_user):
     mail_subject = 'Resetting Password'
