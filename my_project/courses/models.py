@@ -22,6 +22,8 @@ class Course(models.Model):
     course_name = models.CharField(max_length=100)
     course_code = models.CharField(max_length=30)
 
+    departments = models.JSONField()
+
     date_added = models.DateField(auto_now_add=True)
     date_last_modified = models.DateField(auto_now=True)
 
