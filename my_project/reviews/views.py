@@ -21,7 +21,10 @@ def check_login_status(request):
     #insert this if in any needed function where the user must be logged in to access
     #if not check_login_status(request):
         #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
-
+    #add this if needed in a class request = self.request 
+# Helper function to check if user is an admin
+def is_admin(user):
+    return user.is_staff or user.is_superuser
 
 # Create your views here.
 # View to list the latest reviews
@@ -41,32 +44,37 @@ class LatestReviewsView(generics.ListAPIView):
 
 # View to create a new review
 # @login_required
+
 class ReviewCreateView(generics.CreateAPIView):
+
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     # Override the perform_create method to update the course rating after creating a review
     def perform_create(self, serializer):
-        if not check_login_status(self.request):
-            raise ValidationError("not logged in")
-        user = self.request.user
-        course = serializer.validated_data['course']
-        if Review.objects.filter(user=user, course=course).exists():
-            raise ValidationError("You have already reviewed this course.")
+        request = self.request  # Ensure request is available
+        #if not check_login_status(request):
+            #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
+        # user = self.request.user
+        # course = serializer.validated_data['course']
+        # if Review.objects.filter(user=user, course=course).exists():
+        #     raise ValidationError("You have already reviewed this course.")
 
         instance = serializer.save()
+        # instance.course.update_rating()
 
     def create(self, request, *args, **kwargs):
+        request = self.request  # Ensure request is available
+        #if not check_login_status(request):
+            #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
         try:
             response = super().create(request, *args, **kwargs)
             if response.status_code == status.HTTP_201_CREATED:
-                return Response({"status": "Review created successfully", "data": response.data}, status=status.HTTP_201_CREATED)
+                return Response({"status": "Review created successfully", "data": response.data},
+                                status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(REVIEW_CREATION_ERROR(response.data), status=response.status_code)
-
 
 
 # View to retrieve, update, or delete a review
@@ -118,6 +126,9 @@ class Reviews_Status_Update_View(generics.UpdateAPIView):
     serializer_class = ReviewSerializer
 
     def update(self, request, *args, **kwargs):
+        user = request.user
+        if not is_admin(user):
+         return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
         review = get_object_or_404(Review, pk=kwargs['pk'])
         new_status = request.data.get('review_status')  # Ensure we're using 'review_status'
         if int(new_status) not in [status.value for status in ReviewStatus]:  # Ensure proper type conversion
