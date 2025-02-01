@@ -47,15 +47,14 @@ class ReviewCreateView(generics.CreateAPIView):
 
     # Override the perform_create method to update the course rating after creating a review
     def perform_create(self, serializer):
-        # if not check_login_status(self.request):
-        #     raise ValidationError("not logged in")
-        # user = self.request.user
-        # course = serializer.validated_data['course']
-        # if Review.objects.filter(user=user, course=course).exists():
-        #     raise ValidationError("You have already reviewed this course.")
+        if not check_login_status(self.request):
+            raise ValidationError("not logged in")
+        user = self.request.user
+        course = serializer.validated_data['course']
+        if Review.objects.filter(user=user, course=course).exists():
+            raise ValidationError("You have already reviewed this course.")
 
         instance = serializer.save()
-        # instance.course.update_rating()
 
     def create(self, request, *args, **kwargs):
         try:

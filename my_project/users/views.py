@@ -136,8 +136,8 @@ def signup_user(request):
         return Response(USERNAME_TAKEN_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
 
     # Uncomment this line if you want to check for email uniqueness
-    # if check_if_email_exists(email):
-    #     return Response(EMAIL_TAKEN_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
+    if check_if_email_exists(email):
+        return Response(EMAIL_TAKEN_RESPONSE, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         user = User.objects.create_user(username=username, password=password, email=email)
@@ -226,17 +226,16 @@ def set_session(request):
 @api_view(['GET'])
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
-    if (value == 'default_value'):
+    if value == 'default_value':
         return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_400_BAD_REQUEST)
     return HttpResponse(f'Session data: {value}')
 
 
-@api_view(['Deleate'])
+@api_view(['Delete'])
 @user_passes_test(is_admin)
 def delete_session(request):
     try:
         del request.session['user.id']
-        print("AAA")
     except KeyError:
         pass
     return HttpResponse('Session data cleared')
