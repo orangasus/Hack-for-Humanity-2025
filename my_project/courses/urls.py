@@ -16,7 +16,7 @@ urlpatterns = [
     path('<int:pk>/rate/', CourseRatingView.as_view(), name='course_rate'),
     path('course/<int:pk>/status/', Course_Status_Update_View.as_view(), name='course_status_update'),
     path('status/', Course_Status_List_View.as_view(), name='course_status_list'),#/courses/status/?course_status=<status_value>
-    path('test/', search_for_courses, name='search_for_courses')
+    path('course_search/', search_for_courses, name='course_search')
 ]
 
 
