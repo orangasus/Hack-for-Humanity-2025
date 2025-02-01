@@ -56,7 +56,7 @@ def activate_account(request, uidb64, token):
     if token_generator.check_token(ex_user, token):
         ex_user.user.is_active = True
         ex_user.user.save()
-        return Response(ACCOUNT_ACTIVATED_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
+        return Response(ACCOUNT_ACTIVATED_RESPONSE("logged in"), status=status.HTTP_200_OK)
     else:
         return Response(ACTIVATION_FAILED_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
     
