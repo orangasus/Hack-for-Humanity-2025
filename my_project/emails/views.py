@@ -6,15 +6,12 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode
-<<<<<<< HEAD
 from rest_framework import status
-=======
 from django.shortcuts import redirect, get_object_or_404
 from django.utils.encoding import force_str
 from users.models import ExtendedUser
 from django.contrib.auth.models import User
 
->>>>>>> 5f56c40c992261ffc764de946307d4573e8cfb2b
 
 from .token_gen import token_generator
 from users.models import ExtendedUser
