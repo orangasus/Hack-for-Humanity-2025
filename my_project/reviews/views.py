@@ -41,37 +41,32 @@ class LatestReviewsView(generics.ListAPIView):
 
 # View to create a new review
 # @login_required
-
 class ReviewCreateView(generics.CreateAPIView):
-
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
     # Override the perform_create method to update the course rating after creating a review
     def perform_create(self, serializer):
-        request = self.request  # Ensure request is available
-        if not check_login_status(request):
-            return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
-        # user = self.request.user
-        # course = serializer.validated_data['course']
-        # if Review.objects.filter(user=user, course=course).exists():
-        #     raise ValidationError("You have already reviewed this course.")
+        if not check_login_status(self.request):
+            raise ValidationError("not logged in")
+        user = self.request.user
+        course = serializer.validated_data['course']
+        if Review.objects.filter(user=user, course=course).exists():
+            raise ValidationError("You have already reviewed this course.")
 
         instance = serializer.save()
-        # instance.course.update_rating()
 
     def create(self, request, *args, **kwargs):
-        request = self.request  # Ensure request is available
-        if not check_login_status(request):
-            return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
         try:
             response = super().create(request, *args, **kwargs)
             if response.status_code == status.HTTP_201_CREATED:
-                return Response({"status": "Review created successfully", "data": response.data},
-                                status=status.HTTP_201_CREATED)
+                return Response({"status": "Review created successfully", "data": response.data}, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return Response(REVIEW_CREATION_ERROR(response.data), status=response.status_code)
+
 
 
 # View to retrieve, update, or delete a review

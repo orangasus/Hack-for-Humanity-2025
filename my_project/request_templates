@@ -1,0 +1,40 @@
+Uni
+{
+  "uni_name": "Example University"
+}
+
+Prof
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "universities": [1]
+}
+
+Course
+{
+  "course_name": "Introduction to AI",
+  "course_code": "AI101",
+  "university": 1,
+  "professors": [1]
+}
+
+Review
+{
+  "title": "Great Course",
+  "body": "This course was very informative and engaging.",
+  "cognitive_load_rating": 4,
+  "delivery_support_rating": 5,
+  "engagement_enjoyment_rating": 4,
+  "usefulness_relevance_rating": 5,
+  "user": 1,
+  "course": 1
+}
+
+User
+{
+  "username":"isagi",
+  "password":"lol1",
+  "email":"orangasus@gmail.com"
+}
+
+

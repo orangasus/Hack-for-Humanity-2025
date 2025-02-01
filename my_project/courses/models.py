@@ -21,18 +21,18 @@ class CourseStatus(IntEnum):
 class Course(models.Model):
     course_name = models.CharField(max_length=100)
     course_code = models.CharField(max_length=30)
+
     date_added = models.DateField(auto_now_add=True)
     date_last_modified = models.DateField(auto_now=True)
-    has_reviews = models.BooleanField(default=False)
 
     course_status = models.IntegerField(choices=CourseStatus.choices(), default=CourseStatus.UNDER_REVIEW)
 
-    avg_course_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
+    avg_course_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True, null=True)
 
-    avg_cognitive_load_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
-    avg_delivery_support_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
-    avg_engagement_enjoyment_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
-    avg_usefulness_relevance_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True)
+    avg_cognitive_load_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True, null=True)
+    avg_delivery_support_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True, null=True)
+    avg_engagement_enjoyment_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True, null=True)
+    avg_usefulness_relevance_rating = models.DecimalField(decimal_places=1, max_digits=2, blank=True, null=True)
 
     university = models.ForeignKey('uni_prof.University', related_name='courses', on_delete=models.CASCADE)
     professors = models.ManyToManyField('uni_prof.Professor', related_name='courses')
@@ -54,7 +54,3 @@ class Course(models.Model):
         self.avg_usefulness_relevance_rating = round(avg_usefulness_relevance, 1) or MIN_COURSE_RATING
 
         self.save()
-
-    def save(self, *args, **kwargs):
-        self.has_reviews = self.reviews.exists()
-        super().save(*args, **kwargs)

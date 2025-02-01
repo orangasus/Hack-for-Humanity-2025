@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import user_passes_test
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,6 +8,10 @@ from courses.models import Course
 from reviews.models import Review
 from uni_prof.models import University, Professor
 
+def is_admin(user):
+    return user.is_staff or user.is_superuser
+
+@user_passes_test(is_admin)
 @api_view(['DELETE'])
 def delete_all_extended_users(request):
     try:
@@ -15,6 +20,7 @@ def delete_all_extended_users(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@user_passes_test(is_admin)
 @api_view(['DELETE'])
 def delete_all_courses(request):
     try:
@@ -23,6 +29,7 @@ def delete_all_courses(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@user_passes_test(is_admin)
 @api_view(['DELETE'])
 def delete_all_reviews(request):
     try:
@@ -31,6 +38,7 @@ def delete_all_reviews(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@user_passes_test(is_admin)
 @api_view(['DELETE'])
 def delete_all_profs(request):
     try:
@@ -39,6 +47,7 @@ def delete_all_profs(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@user_passes_test(is_admin)
 @api_view(['DELETE'])
 def delete_all_unis(request):
     try:
@@ -47,6 +56,7 @@ def delete_all_unis(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+@user_passes_test(is_admin)
 @api_view(['DELETE'])
 def flush_db(request):
     try:
