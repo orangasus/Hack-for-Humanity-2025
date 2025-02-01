@@ -1,3 +1,5 @@
+from idlelib.iomenu import errors
+
 from rest_framework import generics
 from .models import University, Professor
 from .serializers import UniversitySerializer, ProfessorRatingSerializer, ProfessorSerializer
@@ -84,6 +86,16 @@ def create_university(request):
         serializer.save()
         return Response(UNIVERSITY_CREATED_RESPONSE(serializer.data), status=status.HTTP_201_CREATED)
     return Response(UNIVERSITY_CREATION_ERROR(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_prof_name_rating_by_id(request, prof_id):
+    try:
+        prof = Professor.objects.get(id=prof_id)
+        name = prof.full_name
+        rating = prof.rating
+        return Response({"name":name, "rating": rating}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 # API view for creating a professor
 @api_view(['POST'])
