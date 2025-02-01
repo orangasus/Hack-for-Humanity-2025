@@ -5,6 +5,7 @@ from rest_framework import generics
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.db.models import Q
 
 from .courses_serializer import CourseSerializer, CourseRatingSerializer
 from .custom_responses import (
@@ -80,6 +81,39 @@ def create_course(request):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@api_view(['GET'])
+def search_for_courses(request):
+    uni = request.GET.get('university', None)
+    search_query = request.GET.get('search_query', None)
+    departments = request.GET.getlist('departments')
+
+    print(f"University: {uni}")
+    print(f"Search Query: {search_query}")
+    print(f"Departments: {departments}")
+
+    courses = Course.objects.all()
+
+    if uni:
+        print("Filtering by university")
+        courses = courses.filter(university=uni)
+    if search_query:
+        print("Filtering by search query")
+        courses = courses.filter(
+            Q(course_name__icontains=search_query) | Q(course_code__icontains=search_query)
+        )
+    if departments:
+        print(f"Filtering by departments: {departments}")
+        filtered_courses = []
+        for course in courses:
+            if any(dept in course.departments for dept in departments):
+                filtered_courses.append(course)
+        courses = filtered_courses
+
+    # Serialize the courses
+    serializer = CourseSerializer(courses, many=True)
+
+    return Response({"courses": serializer.data}, status=status.HTTP_200_OK)
 
 class CourseSearchView(generics.ListAPIView):
     serializer_class = CourseSerializer
