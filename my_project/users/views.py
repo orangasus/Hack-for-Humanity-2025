@@ -237,7 +237,7 @@ def set_session(request):
 def get_session(request):
     value = request.session.get('user.id', 'default_value')
     if value == 'default_value':
-        return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_400_BAD_REQUEST)
+        return Response("Invalid", status=status.HTTP_200_OK)
     return HttpResponse(f'Session data: {value}')
 
 
