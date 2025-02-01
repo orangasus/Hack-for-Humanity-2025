@@ -6,7 +6,15 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode
+<<<<<<< HEAD
 from rest_framework import status
+=======
+from django.shortcuts import redirect, get_object_or_404
+from django.utils.encoding import force_str
+from users.models import ExtendedUser
+from django.contrib.auth.models import User
+
+>>>>>>> 5f56c40c992261ffc764de946307d4573e8cfb2b
 
 from .token_gen import token_generator
 from users.models import ExtendedUser
@@ -23,13 +31,41 @@ def check_login_status(request):
 
 
 
+def activate_account(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_b64decode(uidb64))
+        ex_user = get_object_or_404(ExtendedUser, pk=uid)
+
+        if token_generator.check_token(ex_user, token):
+            ex_user.user.is_active = True
+            ex_user.user.save()
+            return redirect('https://uni.styro.dev/login/?response=verified')
+        else:
+            return redirect('https://uni.styro.dev/login/?response=not_verified')
+    except (TypeError, ValueError, OverflowError, ExtendedUser.DoesNotExist):
+        return redirect('https://uni.styro.dev/login/?response=not_verified')
+    
+
+
+#def activate_account(request, uidb64, token):
+   # uid = force_str(urlsafe_b64decode(uidb64))
+    #ex_user = ExtendedUser.objects.get(pk=uid)
+
+    #if token_generator.check_token(ex_user, token):
+        #ex_user.user.is_active = True
+        #ex_user.user.save()
+        #return HttpResponse('Account Confirmed!')
+    #else:
+        #return HttpResponse('Verification Failed :(')
+
+
 def send_confirmation_email(request, ex_user):
     # domain = get_current_site(request).domain
     mail_subject = 'Account Activation'
     message = render_to_string('confirmation_template.html',
                                {
                                    "user": ex_user.user,
-                                   "domain": 'ui.styro.dev',
+                                   "domain": 'uni.styro.dev',
                                    # char/digit -> byte representation (8bit for each char) -> encode64 (6bit for each char) (url-safe) representation
                                    "uid": generate_uidb64(ex_user.pk),
                                    "token": token_generator.make_token(ex_user)
@@ -63,7 +99,7 @@ def send_password_reset_email(request, ex_user):
     message = render_to_string('password_reset.html',
                                {
                                    "user": ex_user,
-                                   "domain": '127.0.0.1:8000',
+                                   "domain": 'uni.styro.dev',
                                    # char/digit -> byte representation (8bit for each char) -> encode64 (6bit for each char) (url-safe) representation
                                    "uid": generate_uidb64(ex_user.pk),
                                    "token": token_generator.make_token(ex_user)
