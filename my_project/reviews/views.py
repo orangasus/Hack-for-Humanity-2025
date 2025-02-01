@@ -55,10 +55,10 @@ class ReviewCreateView(generics.CreateAPIView):
         request = self.request  # Ensure request is available
         #if not check_login_status(request):
             #return Response(GET_SESSION_ERROR_RESPONSE("not logged in"), status=status.HTTP_401_UNAUTHORIZED)
-        # user = self.request.user
-        # course = serializer.validated_data['course']
-        # if Review.objects.filter(user=user, course=course).exists():
-        #     raise ValidationError("You have already reviewed this course.")
+        user = self.request.user
+        course = serializer.validated_data['course']
+        if Review.objects.filter(user=user, course=course).exists():
+            raise ValidationError("You have already reviewed this course.")
 
         instance = serializer.save()
         # instance.course.update_rating()
