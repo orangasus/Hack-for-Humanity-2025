@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-uioqxc7pgxr39vy(d#6)ahz&oy+t$)t^0lfsdx#2pd7a-wukv#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["ui.styro.dev"]
+ALLOWED_HOSTS = ["ui.styro.dev", '127.0.0.1']
 
 # Application definition
 
